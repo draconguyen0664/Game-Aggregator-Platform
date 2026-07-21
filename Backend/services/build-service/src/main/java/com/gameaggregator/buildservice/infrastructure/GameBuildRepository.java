@@ -1,0 +1,1 @@
+package com.gameaggregator.buildservice.infrastructure;import com.gameaggregator.buildservice.domain.GameBuild;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface GameBuildRepository extends JpaRepository<GameBuild,UUID>{List<GameBuild> findAllByVersionId(UUID id);}

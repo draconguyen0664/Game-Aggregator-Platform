@@ -1,0 +1,1 @@
+package com.gameaggregator.billingservice.infrastructure;import com.gameaggregator.billingservice.domain.UsageRecord;import java.util.UUID;import org.springframework.data.jpa.repository.JpaRepository;public interface UsageRecordRepository extends JpaRepository<UsageRecord,UUID>{}

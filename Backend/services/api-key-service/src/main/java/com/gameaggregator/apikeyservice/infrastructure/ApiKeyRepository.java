@@ -1,0 +1,1 @@
+package com.gameaggregator.apikeyservice.infrastructure;import com.gameaggregator.apikeyservice.domain.ApiKey;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface ApiKeyRepository extends JpaRepository<ApiKey,UUID>{List<ApiKey> findAllByClientId(UUID id);Optional<ApiKey> findByKeyHash(String hash);}

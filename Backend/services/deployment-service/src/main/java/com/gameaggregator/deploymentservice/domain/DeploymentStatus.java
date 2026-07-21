@@ -1,0 +1,1 @@
+package com.gameaggregator.deploymentservice.domain;public enum DeploymentStatus{PENDING,QUEUED,RUNNING,SUCCEEDED,FAILED,CANCELLED,ROLLED_BACK}

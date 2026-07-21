@@ -1,0 +1,3 @@
+CREATE TABLE games(id BINARY(16) PRIMARY KEY,studio_id BINARY(16) NOT NULL,publisher_id BINARY(16),slug VARCHAR(255) NOT NULL UNIQUE,title VARCHAR(255) NOT NULL,metadata TEXT,visibility VARCHAR(30) NOT NULL,status VARCHAR(30) NOT NULL,age_rating VARCHAR(50),created_at TIMESTAMP(6) NOT NULL,INDEX idx_game_studio(studio_id));
+CREATE TABLE taxonomies(id BINARY(16) PRIMARY KEY,type VARCHAR(30) NOT NULL,code VARCHAR(255) NOT NULL,name VARCHAR(255) NOT NULL,UNIQUE(type,code));
+CREATE TABLE game_taxonomies(id BINARY(16) PRIMARY KEY,game_id BINARY(16) NOT NULL,taxonomy_id BINARY(16) NOT NULL,UNIQUE(game_id,taxonomy_id),FOREIGN KEY(game_id) REFERENCES games(id) ON DELETE CASCADE,FOREIGN KEY(taxonomy_id) REFERENCES taxonomies(id));

@@ -1,0 +1,3 @@
+package com.gameaggregator.studioservice.domain;
+import jakarta.persistence.*; import java.time.Instant; import java.util.UUID;
+@Entity @Table(name="studios") public class Studio { @Id public UUID id=UUID.randomUUID(); @Column(nullable=false) public UUID tenantId; @Column(nullable=false,unique=true) public String slug; @Column(nullable=false) public String name; @Column(nullable=false) public UUID ownerUserId; @Enumerated(EnumType.STRING) @Column(nullable=false) public Status status=Status.PENDING; @Lob public String settings="{}"; @Column(nullable=false) public Instant createdAt=Instant.now(); protected Studio(){} public Studio(UUID t,String s,String n,UUID o){tenantId=t;slug=s;name=n;ownerUserId=o;} public enum Status{PENDING,ACTIVE,SUSPENDED,ARCHIVED} }

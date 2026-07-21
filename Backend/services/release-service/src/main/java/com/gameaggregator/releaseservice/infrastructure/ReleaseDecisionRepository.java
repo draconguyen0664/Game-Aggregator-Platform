@@ -1,0 +1,1 @@
+package com.gameaggregator.releaseservice.infrastructure;import com.gameaggregator.releaseservice.domain.ReleaseDecision;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface ReleaseDecisionRepository extends JpaRepository<ReleaseDecision,UUID>{List<ReleaseDecision> findAllByReleaseId(UUID id);}

@@ -1,0 +1,5 @@
+-- +goose Up
+CREATE TABLE health_checks (id BIGINT PRIMARY KEY AUTO_INCREMENT, checked_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP);
+
+-- +goose Down
+DROP TABLE health_checks;

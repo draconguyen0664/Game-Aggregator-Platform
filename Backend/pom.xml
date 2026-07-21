@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.gameaggregator</groupId>
+  <artifactId>backend-reactor</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <modules>
+    <module>packages/platform-core</module>
+    <module>Spring Boot</module>
+    <module>services/auth-service</module>
+    <module>services/tenant-service</module>
+    <module>services/authorization-service</module>
+    <module>services/studio-service</module>
+    <module>services/publisher-service</module>
+    <module>services/client-service</module>
+    <module>services/game-service</module>
+    <module>services/game-media-service</module>
+    <module>services/entitlement-service</module>
+    <module>services/api-key-service</module>
+    <module>services/version-service</module>
+    <module>services/build-service</module>
+    <module>services/release-service</module>
+    <module>services/deployment-service</module>
+    <module>services/contract-service</module>
+    <module>services/revenue-service</module>
+    <module>services/ledger-service</module>
+    <module>services/billing-service</module>
+    <module>services/webhook-service</module>
+    <module>services/audit-service</module>
+    <module>services/incident-service</module>
+    <module>services/feature-flag-service</module>
+  </modules>
+</project>
+

@@ -1,0 +1,668 @@
+name: game-aggregator
+
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    command: ["mysqld", "--max-connections=500"]
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-game_aggregator}
+      MYSQL_USER: ${MYSQL_USER:-game_app}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ../mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [platform]
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a $$REDIS_PASSWORD ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+    networks: [platform]
+
+  kafka:
+    image: apache/kafka:4.1.1
+    restart: unless-stopped
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+    networks: [platform]
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    ports:
+      - "8085:8080"
+    networks: [platform]
+
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [platform]
+
+  flyway:
+    image: flyway/flyway:11.10.5
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      FLYWAY_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-game_aggregator}?allowPublicKeyRetrieval=true&useSSL=false
+      FLYWAY_USER: ${MYSQL_USER:-game_app}
+      FLYWAY_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+    command: ["migrate"]
+    volumes:
+      - ../../database/migrations:/flyway/sql:ro
+    networks: [platform]
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - >-
+        mc alias set local http://minio:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}" &&
+        mc mb --ignore-existing "local/$${MINIO_BUCKET}"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
+      MINIO_BUCKET: ${MINIO_BUCKET:-game-assets}
+    networks: [platform]
+  auth-service:
+    build: ../../services/auth-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8081
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/auth_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      INTERNAL_REGISTRATION_KEY: ${INTERNAL_REGISTRATION_KEY:?Set INTERNAL_REGISTRATION_KEY in .env}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+    ports: ["8081:8081"]
+    depends_on:
+      mysql: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+    networks: [platform]
+
+  tenant-service:
+    build: ../../services/tenant-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8082
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/tenant_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+    ports: ["8082:8082"]
+    depends_on:
+      mysql: { condition: service_healthy }
+    networks: [platform]
+
+  authorization-service:
+    build: ../../services/authorization-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8083
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/authorization_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      CLIENTS_TENANT_SERVICE_URL: http://tenant-service:8082
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+    ports: ["8083:8083"]
+    depends_on:
+      mysql: { condition: service_healthy }
+      tenant-service: { condition: service_started }
+    networks: [platform]
+  studio-service:
+    build: ../../services/studio-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8084
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/studio_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+    ports: ["8084:8084"]
+    depends_on:
+      mysql: { condition: service_healthy }
+    networks: [platform]
+
+  publisher-service:
+    build: ../../services/publisher-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8086
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/publisher_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+    ports: ["8086:8086"]
+    depends_on:
+      mysql: { condition: service_healthy }
+    networks: [platform]
+
+  client-service:
+    build: ../../services/client-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8087
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/client_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+    ports: ["8087:8087"]
+    depends_on:
+      mysql: { condition: service_healthy }
+    networks: [platform]
+  game-service:
+    build: ../../services/game-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8088
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/game_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+    ports: ["8088:8088"]
+    depends_on: { mysql: { condition: service_healthy } }
+    networks: [platform]
+  game-media-service:
+    build: ../../services/game-media-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8089
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/game_media_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      STORAGE_ENDPOINT: http://minio:9000
+      STORAGE_BUCKET: ${MINIO_BUCKET:-game-assets}
+      STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
+    ports: ["8089:8089"]
+    depends_on:
+      mysql: { condition: service_healthy }
+      minio: { condition: service_healthy }
+    networks: [platform]
+  entitlement-service:
+    build: ../../services/entitlement-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8090
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/entitlement_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+    ports: ["8090:8090"]
+    depends_on: { mysql: { condition: service_healthy } }
+    networks: [platform]
+  api-key-service:
+    build: ../../services/api-key-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8091
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/api_key_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      API_KEY_PEPPER: ${API_KEY_PEPPER:?Set API_KEY_PEPPER in .env}
+    ports: ["8091:8091"]
+    depends_on:
+      mysql: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    networks: [platform]
+  version-service:
+    build: ../../services/version-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8092
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/version_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+    ports: ["8092:8092"]
+    depends_on: { mysql: { condition: service_healthy } }
+    networks: [platform]
+  build-service:
+    build: ../../services/build-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8093
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/build_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      STORAGE_ENDPOINT: http://minio:9000
+      STORAGE_BUCKET: ${MINIO_BUCKET:-game-assets}
+      STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
+    ports: ["8093:8093"]
+    depends_on:
+      mysql: { condition: service_healthy }
+      minio: { condition: service_healthy }
+    networks: [platform]
+  release-service:
+    build: ../../services/release-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8094
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/release_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+    ports: ["8094:8094"]
+    depends_on: { mysql: { condition: service_healthy } }
+    networks: [platform]
+  deployment-service:
+    build: ../../services/deployment-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8095
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/deployment_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+    ports: ["8095:8095"]
+    depends_on: { mysql: { condition: service_healthy } }
+    networks: [platform]
+  contract-service:
+    build: ../../services/contract-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8096
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/contract_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports: ["8096:8096"]
+    depends_on: { mysql: { condition: service_healthy } }
+    networks: [platform]
+  revenue-service:
+    build: ../../services/revenue-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8097
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/revenue_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports: ["8097:8097"]
+    depends_on: { mysql: { condition: service_healthy } }
+    networks: [platform]
+  ledger-service:
+    build: ../../services/ledger-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8098
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/ledger_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports: ["8098:8098"]
+    depends_on: { mysql: { condition: service_healthy } }
+    networks: [platform]
+  billing-service:
+    build: ../../services/billing-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8099
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/billing_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports: ["8099:8099"]
+    depends_on: { mysql: { condition: service_healthy } }
+    networks: [platform]
+  webhook-service:
+    build: ../../services/webhook-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8100
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/webhook_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      WEBHOOK_MASTER_KEY: ${WEBHOOK_MASTER_KEY:?Set WEBHOOK_MASTER_KEY in .env}
+    ports: ["8100:8100"]
+    depends_on:
+      mysql: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+    networks: [platform]
+  audit-service:
+    build: ../../services/audit-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8101
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/audit_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports: ["8101:8101"]
+    depends_on:
+      mysql: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+    networks: [platform]
+  incident-service:
+    build: ../../services/incident-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8102
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/incident_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+    ports: ["8102:8102"]
+    depends_on: { mysql: { condition: service_healthy } }
+    networks: [platform]
+  feature-flag-service:
+    build: ../../services/feature-flag-service
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8103
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m -XX:MaxMetaspaceSize=160m
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 4
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 1
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      DB_URL: jdbc:mysql://mysql:3306/feature_flag_service?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${MYSQL_USER:-game_app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+    ports: ["8103:8103"]
+    depends_on:
+      mysql: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    networks: [platform]
+  go-api-gateway:
+    build:
+      context: ../../Golang
+      dockerfile: services/api-gateway/Dockerfile
+    restart: unless-stopped
+    environment:
+      HTTP_ADDR: :8080
+      REDIS_ADDR: redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+      KAFKA_BROKERS: kafka:9092
+      API_KEY_PEPPER: ${API_KEY_PEPPER:?Set API_KEY_PEPPER in .env}
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-60}
+      GATEWAY_ROUTES: '[{"prefix":"/auth","upstream":"http://auth-service:8081","scope":"auth:access"},{"prefix":"/api/v1/games","upstream":"http://game-service:8088","scope":"game:read"},{"prefix":"/api/v1/game-media","upstream":"http://game-media-service:8089","scope":"game:read"},{"prefix":"/api/v1/entitlements","upstream":"http://entitlement-service:8090","scope":"entitlement:read"},{"prefix":"/api/v1/builds","upstream":"http://build-service:8093","scope":"release:read"},{"prefix":"/api/v1/releases","upstream":"http://release-service:8094","scope":"release:read"},{"prefix":"/api/v1/deployments","upstream":"http://deployment-service:8095","scope":"release:deploy"}]'
+    ports: ["8080:8080"]
+    depends_on:
+      redis: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+    networks: [platform]
+  go-analytics-consumer:
+    build:
+      context: ../../Golang
+      dockerfile: services/analytics-consumer/Dockerfile
+    restart: unless-stopped
+    environment:
+      MYSQL_DSN: ${MYSQL_USER:-game_app}:${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}@tcp(mysql:3306)/analytics_service?parseTime=true&charset=utf8mb4
+      REDIS_ADDR: redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+      KAFKA_BROKERS: kafka:9092
+    depends_on:
+      mysql: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+    networks: [platform]
+  go-log-ingestion:
+    build:
+      context: ../../Golang
+      dockerfile: services/log-ingestion/Dockerfile
+    restart: unless-stopped
+    environment:
+      HTTP_ADDR: :8080
+      KAFKA_BROKERS: kafka:9092
+      LOG_INGEST_TOKEN: ${LOG_INGEST_TOKEN:?Set LOG_INGEST_TOKEN in .env}
+    ports: ["8104:8080"]
+    depends_on:
+      kafka: { condition: service_healthy }
+    networks: [platform]
+  go-realtime-monitoring:
+    build:
+      context: ../../Golang
+      dockerfile: services/realtime-monitoring/Dockerfile
+    restart: unless-stopped
+    environment:
+      HTTP_ADDR: :8080
+      KAFKA_BROKERS: kafka:9092
+      MONITORING_TOKEN: ${MONITORING_TOKEN:?Set MONITORING_TOKEN in .env}
+    ports: ["8105:8080"]
+    depends_on:
+      kafka: { condition: service_healthy }
+    networks: [platform]
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    restart: unless-stopped
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.path=/prometheus"]
+    volumes:
+      - ../monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks: [platform]
+
+  loki:
+    image: grafana/loki:3.5.1
+    restart: unless-stopped
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    volumes:
+      - ../monitoring/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki-data:/loki
+    ports:
+      - "3100:3100"
+    networks: [platform]
+
+  tempo:
+    image: grafana/tempo:2.8.1
+    restart: unless-stopped
+    command: ["-config.file=/etc/tempo/tempo.yml"]
+    volumes:
+      - ../monitoring/tempo/tempo.yml:/etc/tempo/tempo.yml:ro
+      - tempo-data:/var/tempo
+    ports:
+      - "3200:3200"
+    networks: [platform]
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.130.1
+    restart: unless-stopped
+    command: ["--config=/etc/otelcol-contrib/config.yml"]
+    volumes:
+      - ../monitoring/otel-collector/config.yml:/etc/otelcol-contrib/config.yml:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "8889:8889"
+    depends_on: [tempo]
+    networks: [platform]
+
+  grafana:
+    image: grafana/grafana:12.0.2
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD in .env}
+    volumes:
+      - ../monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    depends_on: [prometheus, loki, tempo]
+    networks: [platform]
+
+networks:
+  platform:
+    name: game-aggregator-platform
+
+volumes:
+  mysql-data:
+  redis-data:
+  kafka-data:
+  minio-data:
+  prometheus-data:
+  grafana-data:
+  loki-data:
+  tempo-data:
+

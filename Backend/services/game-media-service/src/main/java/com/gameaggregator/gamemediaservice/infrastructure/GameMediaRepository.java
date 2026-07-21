@@ -1,0 +1,1 @@
+package com.gameaggregator.gamemediaservice.infrastructure;import com.gameaggregator.gamemediaservice.domain.GameMedia;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface GameMediaRepository extends JpaRepository<GameMedia,UUID>{List<GameMedia> findAllByGameId(UUID id);}

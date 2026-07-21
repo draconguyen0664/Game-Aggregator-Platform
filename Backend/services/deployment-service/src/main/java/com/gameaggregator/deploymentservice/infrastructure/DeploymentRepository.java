@@ -1,0 +1,1 @@
+package com.gameaggregator.deploymentservice.infrastructure;import com.gameaggregator.deploymentservice.domain.Deployment;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface DeploymentRepository extends JpaRepository<Deployment,UUID>{List<Deployment> findAllByReleaseId(UUID id);}

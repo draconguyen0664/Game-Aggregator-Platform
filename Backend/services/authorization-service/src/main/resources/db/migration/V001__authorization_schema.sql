@@ -1,0 +1,1 @@
+CREATE TABLE authorization_audits(id BINARY(16) PRIMARY KEY,user_id BINARY(16) NOT NULL,tenant_id BINARY(16) NOT NULL,permission VARCHAR(150) NOT NULL,allowed BOOLEAN NOT NULL,reason VARCHAR(500) NOT NULL,created_at TIMESTAMP(6) NOT NULL,updated_at TIMESTAMP(6) NOT NULL,INDEX idx_authz_user_tenant(user_id,tenant_id),INDEX idx_authz_created(created_at));

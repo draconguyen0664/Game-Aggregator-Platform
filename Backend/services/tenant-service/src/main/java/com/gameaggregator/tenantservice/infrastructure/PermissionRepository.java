@@ -1,0 +1,1 @@
+package com.gameaggregator.tenantservice.infrastructure; import com.gameaggregator.tenantservice.domain.Permission; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; public interface PermissionRepository extends JpaRepository<Permission,UUID>{Optional<Permission> findByCode(String code);}

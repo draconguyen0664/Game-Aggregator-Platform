@@ -1,0 +1,1 @@
+package com.gameaggregator.publisherservice.infrastructure; import com.gameaggregator.publisherservice.domain.DistributionRight;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface DistributionRightRepository extends JpaRepository<DistributionRight,UUID>{List<DistributionRight> findAllByPublisherId(UUID id);}

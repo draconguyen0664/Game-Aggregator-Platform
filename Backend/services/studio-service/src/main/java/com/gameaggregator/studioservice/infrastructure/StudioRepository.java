@@ -1,0 +1,1 @@
+package com.gameaggregator.studioservice.infrastructure; import com.gameaggregator.studioservice.domain.Studio; import java.util.UUID; import org.springframework.data.jpa.repository.JpaRepository; public interface StudioRepository extends JpaRepository<Studio,UUID>{}

@@ -1,0 +1,1 @@
+package com.gameaggregator.webhookservice;import org.springframework.boot.SpringApplication;import org.springframework.boot.autoconfigure.SpringBootApplication;@SpringBootApplication @org.springframework.scheduling.annotation.EnableScheduling public class WebhookServiceApplication{public static void main(String[]a){SpringApplication.run(WebhookServiceApplication.class,a);}}

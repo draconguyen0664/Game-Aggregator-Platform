@@ -1,0 +1,1 @@
+package com.gameaggregator.deploymentservice;import org.springframework.boot.SpringApplication;import org.springframework.boot.autoconfigure.SpringBootApplication;@SpringBootApplication public class DeploymentServiceApplication{public static void main(String[]a){SpringApplication.run(DeploymentServiceApplication.class,a);}}

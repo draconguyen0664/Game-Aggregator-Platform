@@ -1,0 +1,1 @@
+package com.gameaggregator.featureflagservice.infrastructure;import com.gameaggregator.featureflagservice.domain.FeatureFlagHistory;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface FeatureFlagHistoryRepository extends JpaRepository<FeatureFlagHistory,UUID>{List<FeatureFlagHistory> findAllByFlagIdOrderByCreatedAtDesc(UUID id);}

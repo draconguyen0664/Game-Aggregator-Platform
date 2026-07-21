@@ -1,0 +1,1 @@
+package com.gameaggregator.webhookservice.infrastructure;import com.gameaggregator.webhookservice.domain.WebhookAttempt;import java.util.UUID;import org.springframework.data.jpa.repository.JpaRepository;public interface WebhookAttemptRepository extends JpaRepository<WebhookAttempt,UUID>{}

@@ -1,0 +1,1 @@
+package com.gameaggregator.deploymentservice.infrastructure;import com.gameaggregator.deploymentservice.domain.DeploymentEvent;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface DeploymentEventRepository extends JpaRepository<DeploymentEvent,UUID>{List<DeploymentEvent> findAllByDeploymentIdOrderByCreatedAtAsc(UUID id);}

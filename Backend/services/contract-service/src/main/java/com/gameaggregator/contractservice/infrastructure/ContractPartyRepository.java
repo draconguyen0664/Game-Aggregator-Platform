@@ -1,0 +1,1 @@
+package com.gameaggregator.contractservice.infrastructure;import com.gameaggregator.contractservice.domain.ContractParty;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface ContractPartyRepository extends JpaRepository<ContractParty,UUID>{List<ContractParty> findAllByContractId(UUID id);}

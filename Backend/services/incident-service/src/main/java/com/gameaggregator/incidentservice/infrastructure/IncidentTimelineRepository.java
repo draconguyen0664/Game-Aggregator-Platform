@@ -1,0 +1,1 @@
+package com.gameaggregator.incidentservice.infrastructure;import com.gameaggregator.incidentservice.domain.IncidentTimeline;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface IncidentTimelineRepository extends JpaRepository<IncidentTimeline,UUID>{List<IncidentTimeline> findAllByIncidentIdOrderByCreatedAtAsc(UUID id);}

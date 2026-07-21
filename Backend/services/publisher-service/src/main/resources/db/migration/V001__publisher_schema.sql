@@ -1,0 +1,3 @@
+CREATE TABLE publishers(id BINARY(16) PRIMARY KEY,tenant_id BINARY(16) NOT NULL,slug VARCHAR(255) NOT NULL UNIQUE,name VARCHAR(255) NOT NULL,owner_user_id BINARY(16) NOT NULL,INDEX idx_publisher_tenant(tenant_id));
+CREATE TABLE publisher_team(id BINARY(16) PRIMARY KEY,publisher_id BINARY(16) NOT NULL,user_id BINARY(16) NOT NULL,role VARCHAR(255) NOT NULL,UNIQUE(publisher_id,user_id),FOREIGN KEY(publisher_id) REFERENCES publishers(id) ON DELETE CASCADE);
+CREATE TABLE distribution_rights(id BINARY(16) PRIMARY KEY,publisher_id BINARY(16) NOT NULL,game_id BINARY(16) NOT NULL,territory VARCHAR(255) NOT NULL,starts_on DATE NOT NULL,ends_on DATE,INDEX idx_right_game(game_id),FOREIGN KEY(publisher_id) REFERENCES publishers(id) ON DELETE CASCADE);

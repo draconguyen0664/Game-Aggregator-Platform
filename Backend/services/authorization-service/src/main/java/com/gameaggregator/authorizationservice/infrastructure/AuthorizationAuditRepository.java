@@ -1,0 +1,1 @@
+package com.gameaggregator.authorizationservice.infrastructure; import com.gameaggregator.authorizationservice.domain.AuthorizationAudit; import java.util.UUID; import org.springframework.data.jpa.repository.JpaRepository; public interface AuthorizationAuditRepository extends JpaRepository<AuthorizationAudit,UUID>{}

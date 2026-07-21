@@ -1,0 +1,1 @@
+package com.gameaggregator.revenueservice.infrastructure;import com.gameaggregator.revenueservice.domain.RevenueRule;import java.util.UUID;import org.springframework.data.jpa.repository.JpaRepository;public interface RevenueRuleRepository extends JpaRepository<RevenueRule,UUID>{}

@@ -1,0 +1,1 @@
+package com.gameaggregator.buildservice.infrastructure;import com.gameaggregator.buildservice.domain.BuildLog;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface BuildLogRepository extends JpaRepository<BuildLog,UUID>{List<BuildLog> findAllByBuildIdOrderByCreatedAtAsc(UUID id);}

@@ -1,0 +1,1 @@
+package com.gameaggregator.tenantservice.infrastructure; import com.gameaggregator.tenantservice.domain.MemberRole; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; public interface MemberRoleRepository extends JpaRepository<MemberRole,UUID>{List<MemberRole> findByMemberId(UUID memberId);}

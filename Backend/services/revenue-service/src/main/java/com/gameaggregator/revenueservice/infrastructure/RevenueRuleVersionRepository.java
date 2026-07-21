@@ -1,0 +1,1 @@
+package com.gameaggregator.revenueservice.infrastructure;import com.gameaggregator.revenueservice.domain.RevenueRuleVersion;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface RevenueRuleVersionRepository extends JpaRepository<RevenueRuleVersion,UUID>{List<RevenueRuleVersion> findAllByRuleIdOrderByVersionNumberDesc(UUID id);}

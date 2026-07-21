@@ -1,0 +1,1 @@
+package com.gameaggregator.gameservice.infrastructure;import com.gameaggregator.gameservice.domain.Taxonomy;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface TaxonomyRepository extends JpaRepository<Taxonomy,UUID>{List<Taxonomy> findAllByType(String type);}

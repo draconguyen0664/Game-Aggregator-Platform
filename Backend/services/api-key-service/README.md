@@ -1,0 +1,2 @@
+# API Key Service
+Owns API key generation, one-time secret disclosure, hashing, scopes, environment, expiration, IP allowlist, quota, rotation and revocation. Raw secrets are never persisted. Active metadata is synchronized to Redis under `api-key:{keyHash}`.

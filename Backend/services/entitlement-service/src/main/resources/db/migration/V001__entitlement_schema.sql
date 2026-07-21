@@ -1,0 +1,1 @@
+CREATE TABLE entitlements(id BINARY(16) PRIMARY KEY,client_id BINARY(16) NOT NULL,game_id BINARY(16) NOT NULL,environment_id BINARY(16) NOT NULL,region VARCHAR(100) NOT NULL,start_date DATE NOT NULL,end_date DATE,status VARCHAR(30) NOT NULL,contract_reference VARCHAR(255),version BIGINT NOT NULL,INDEX idx_entitlement_lookup(client_id,game_id,environment_id,region,status));

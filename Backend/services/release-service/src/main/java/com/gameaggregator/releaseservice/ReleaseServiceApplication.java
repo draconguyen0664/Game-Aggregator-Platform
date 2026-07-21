@@ -1,0 +1,1 @@
+package com.gameaggregator.releaseservice;import org.springframework.boot.SpringApplication;import org.springframework.boot.autoconfigure.SpringBootApplication;@SpringBootApplication public class ReleaseServiceApplication{public static void main(String[]a){SpringApplication.run(ReleaseServiceApplication.class,a);}}

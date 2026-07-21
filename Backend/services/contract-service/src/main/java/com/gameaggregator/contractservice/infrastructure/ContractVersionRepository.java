@@ -1,0 +1,1 @@
+package com.gameaggregator.contractservice.infrastructure;import com.gameaggregator.contractservice.domain.ContractVersion;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface ContractVersionRepository extends JpaRepository<ContractVersion,UUID>{List<ContractVersion> findAllByContractIdOrderByVersionNumberDesc(UUID id);}

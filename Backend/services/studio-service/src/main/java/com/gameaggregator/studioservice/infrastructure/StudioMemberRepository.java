@@ -1,0 +1,1 @@
+package com.gameaggregator.studioservice.infrastructure; import com.gameaggregator.studioservice.domain.StudioMember; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; public interface StudioMemberRepository extends JpaRepository<StudioMember,UUID>{List<StudioMember> findAllByStudioId(UUID id);}

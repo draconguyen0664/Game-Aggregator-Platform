@@ -1,0 +1,1 @@
+package com.gameaggregator.publisherservice.infrastructure; import com.gameaggregator.publisherservice.domain.PublisherTeamMember;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface PublisherTeamMemberRepository extends JpaRepository<PublisherTeamMember,UUID>{List<PublisherTeamMember> findAllByPublisherId(UUID id);}

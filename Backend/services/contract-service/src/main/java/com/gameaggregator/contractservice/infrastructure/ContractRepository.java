@@ -1,0 +1,1 @@
+package com.gameaggregator.contractservice.infrastructure;import com.gameaggregator.contractservice.domain.Contract;import java.util.UUID;import org.springframework.data.jpa.repository.JpaRepository;public interface ContractRepository extends JpaRepository<Contract,UUID>{}

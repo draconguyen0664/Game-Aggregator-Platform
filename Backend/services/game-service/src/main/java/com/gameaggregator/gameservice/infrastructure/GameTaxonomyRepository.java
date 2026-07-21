@@ -1,0 +1,1 @@
+package com.gameaggregator.gameservice.infrastructure;import com.gameaggregator.gameservice.domain.GameTaxonomy;import java.util.UUID;import org.springframework.data.jpa.repository.JpaRepository;public interface GameTaxonomyRepository extends JpaRepository<GameTaxonomy,UUID>{}

@@ -1,0 +1,1 @@
+package com.gameaggregator.ledgerservice;import org.springframework.boot.SpringApplication;import org.springframework.boot.autoconfigure.SpringBootApplication;@SpringBootApplication public class LedgerServiceApplication{public static void main(String[]a){SpringApplication.run(LedgerServiceApplication.class,a);}}

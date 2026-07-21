@@ -1,0 +1,1 @@
+package com.gameaggregator.featureflagservice.infrastructure;import com.gameaggregator.featureflagservice.domain.FeatureFlag;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface FeatureFlagRepository extends JpaRepository<FeatureFlag,UUID>{Optional<FeatureFlag> findByFlagKey(String key);}

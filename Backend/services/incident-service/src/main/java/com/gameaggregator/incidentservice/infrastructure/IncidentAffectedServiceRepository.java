@@ -1,0 +1,1 @@
+package com.gameaggregator.incidentservice.infrastructure;import com.gameaggregator.incidentservice.domain.IncidentAffectedService;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface IncidentAffectedServiceRepository extends JpaRepository<IncidentAffectedService,UUID>{List<IncidentAffectedService> findAllByIncidentId(UUID id);}

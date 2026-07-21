@@ -1,0 +1,1 @@
+package com.gameaggregator.clientservice.infrastructure;import com.gameaggregator.clientservice.domain.ClientEnvironment;import java.util.UUID;import org.springframework.data.jpa.repository.JpaRepository;public interface ClientEnvironmentRepository extends JpaRepository<ClientEnvironment,UUID>{}

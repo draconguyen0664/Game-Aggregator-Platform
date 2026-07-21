@@ -1,0 +1,1 @@
+package com.gameaggregator.ledgerservice.infrastructure;import com.gameaggregator.ledgerservice.domain.RevenueAllocation;import java.util.UUID;import org.springframework.data.jpa.repository.JpaRepository;public interface RevenueAllocationRepository extends JpaRepository<RevenueAllocation,UUID>{}

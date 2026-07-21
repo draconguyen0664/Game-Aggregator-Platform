@@ -1,0 +1,1 @@
+CREATE TABLE game_media(id BINARY(16) PRIMARY KEY,game_id BINARY(16) NOT NULL,type VARCHAR(40) NOT NULL,object_key VARCHAR(512) NOT NULL UNIQUE,content_type VARCHAR(255) NOT NULL,size_bytes BIGINT NOT NULL,status VARCHAR(30) NOT NULL,created_at TIMESTAMP(6) NOT NULL,INDEX idx_media_game(game_id));

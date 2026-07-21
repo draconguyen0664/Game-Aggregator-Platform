@@ -1,0 +1,1 @@
+package com.gameaggregator.tenantservice.infrastructure; import com.gameaggregator.tenantservice.domain.Organization; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; public interface OrganizationRepository extends JpaRepository<Organization,UUID>{List<Organization> findByTenantId(UUID tenantId);}

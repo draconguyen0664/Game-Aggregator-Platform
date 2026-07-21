@@ -1,0 +1,1 @@
+package com.gameaggregator.publisherservice.infrastructure; import com.gameaggregator.publisherservice.domain.Publisher;import java.util.UUID;import org.springframework.data.jpa.repository.JpaRepository;public interface PublisherRepository extends JpaRepository<Publisher,UUID>{}

@@ -1,0 +1,1 @@
+package com.gameaggregator.ledgerservice.infrastructure;import com.gameaggregator.ledgerservice.domain.Adjustment;import java.util.UUID;import org.springframework.data.jpa.repository.JpaRepository;public interface AdjustmentRepository extends JpaRepository<Adjustment,UUID>{}

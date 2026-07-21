@@ -1,0 +1,1 @@
+package com.gameaggregator.auditservice.domain;public enum AuditAction{CREATE,UPDATE,DELETE,APPROVE,REJECT,ROTATE_KEY,REVOKE_KEY,DEPLOY,ROLLBACK,LOGIN,PERMISSION_CHANGE}
