@@ -1,0 +1,47 @@
+:root {
+  --ga-background: oklch(0.985 0.004 220);
+  --ga-foreground: oklch(0.21 0.02 230);
+  --ga-surface: oklch(1 0 0);
+  --ga-surface-muted: oklch(0.965 0.006 220);
+  --ga-primary: oklch(0.47 0.09 170);
+  --ga-primary-hover: oklch(0.4 0.08 170);
+  --ga-primary-foreground: oklch(0.99 0 0);
+  --ga-secondary: oklch(0.93 0.025 220);
+  --ga-secondary-foreground: oklch(0.25 0.04 220);
+  --ga-muted-foreground: oklch(0.5 0.025 230);
+  --ga-border: oklch(0.88 0.012 220);
+  --ga-ring: oklch(0.59 0.12 215);
+  --ga-danger: oklch(0.52 0.2 27);
+  --ga-success: oklch(0.5 0.13 145);
+  --ga-warning: oklch(0.58 0.14 65);
+  --ga-info: oklch(0.55 0.18 255);
+  --ga-radius-sm: 4px;
+  --ga-radius-md: 6px;
+  --ga-radius-lg: 8px;
+  --ga-shadow-sm: 0 1px 2px rgb(15 23 42 / 0.08);
+  --ga-shadow-md: 0 8px 24px rgb(15 23 42 / 0.12);
+  --ga-space-1: 0.25rem;
+  --ga-space-2: 0.5rem;
+  --ga-space-3: 0.75rem;
+  --ga-space-4: 1rem;
+  --ga-space-6: 1.5rem;
+  --ga-space-8: 2rem;
+  --ga-icon-sm: 1rem;
+  --ga-icon-md: 1.25rem;
+  --ga-icon-lg: 1.5rem;
+}
+
+.dark {
+  --ga-background: oklch(0.18 0.015 230);
+  --ga-foreground: oklch(0.94 0.006 220);
+  --ga-surface: oklch(0.23 0.018 230);
+  --ga-surface-muted: oklch(0.27 0.018 230);
+  --ga-primary: oklch(0.7 0.11 170);
+  --ga-primary-hover: oklch(0.76 0.1 170);
+  --ga-primary-foreground: oklch(0.17 0.02 170);
+  --ga-secondary: oklch(0.31 0.025 225);
+  --ga-secondary-foreground: oklch(0.93 0.01 220);
+  --ga-muted-foreground: oklch(0.7 0.018 220);
+  --ga-border: oklch(0.36 0.02 225);
+  --ga-ring: oklch(0.72 0.1 205);
+}

@@ -1,21 +1,24 @@
 {
   "name": "game-aggregator-web",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "npm run test --workspaces --if-present",
-    "build": "npm run build --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present"
+  "private": true,
+  "packageManager": "pnpm@10.14.0",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=10"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "private": "true",
-  "workspaces": [
-    "Platform Admin Portal",
-    "Studio Portal",
-    "Client Portal"
-  ]
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "storybook": "turbo run storybook",
+    "generate:api": "pnpm --filter @game-aggregator/api-client generate",
+    "check": "turbo run lint typecheck test build"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.6",
+    "typescript": "^5.9.2"
+  }
 }

@@ -1,0 +1,39 @@
+@import "@game-aggregator/design-tokens/styles.css";
+
+.ga-control {
+  border: 1px solid var(--ga-border);
+  border-radius: var(--ga-radius-md);
+  background: var(--ga-surface);
+  color: var(--ga-foreground);
+  min-height: 2.25rem;
+  outline: none;
+  transition: border-color 150ms, box-shadow 150ms, background 150ms;
+}
+
+.ga-control:focus-visible {
+  border-color: var(--ga-ring);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ga-ring) 22%, transparent);
+}
+
+.ga-control:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.ga-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  background: rgb(15 23 42 / 0.48);
+}
+
+.ga-dialog {
+  background: var(--ga-surface);
+  color: var(--ga-foreground);
+  box-shadow: var(--ga-shadow-md);
+}
+
+@keyframes ga-pulse {
+  50% { opacity: 0.45; }
+}

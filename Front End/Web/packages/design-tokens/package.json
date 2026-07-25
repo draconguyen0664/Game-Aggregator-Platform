@@ -1,0 +1,17 @@
+{
+  "name": "@game-aggregator/design-tokens",
+  "version": "0.1.0",
+  "private": true,
+  "sideEffects": ["*.css"],
+  "exports": {
+    "./styles.css": "./styles.css",
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}

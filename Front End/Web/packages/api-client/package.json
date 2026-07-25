@@ -1,0 +1,27 @@
+{
+  "name": "@game-aggregator/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/generated/schema.ts"
+  },
+  "scripts": {
+    "generate": "node scripts/generate.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "catalog:",
+    "openapi-fetch": "^0.17.0",
+    "openapi-react-query": "^0.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "openapi-typescript": "^7.9.1",
+    "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.0.0"
+  }
+}
