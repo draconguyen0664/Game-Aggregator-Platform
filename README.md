@@ -43,7 +43,7 @@ Each microservice and portal lives in its own directory and can be developed, te
 
 | Component | Count | Projects |
 |---|---:|---|
-| Spring Boot services | 22 | `api-key-service`, `audit-service`, `authorization-service`, `auth-service`, `billing-service`, `build-service`, `client-service`, `contract-service`, `deployment-service`, `entitlement-service`, `feature-flag-service`, `game-media-service`, `game-service`, `incident-service`, `ledger-service`, `publisher-service`, `release-service`, `revenue-service`, `studio-service`, `tenant-service`, `version-service`, `webhook-service` |
+| Spring Boot services | 22 | `api-key-service`, `audit-service`, `auth-service`, `authorization-service`, `billing-service`, `build-service`, `client-service`, `contract-service`, `deployment-service`, `entitlement-service`, `feature-flag-service`, `game-media-service`, `game-service`, `incident-service`, `ledger-service`, `publisher-service`, `release-service`, `revenue-service`, `studio-service`, `tenant-service`, `version-service`, `webhook-service` |
 | Go services | 4 | `analytics-consumer`, `api-gateway`, `log-ingestion`, `realtime-monitoring` |
 | Web portals | 3 | `admin-web`, `client-web`, `studio-web` |
 <!-- END GENERATED PROJECT INVENTORY -->
