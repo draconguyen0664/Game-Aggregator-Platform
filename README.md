@@ -462,3 +462,4 @@ Only content between `BEGIN GENERATED` and `END GENERATED` comments is replaced.
 ### Platform Admin Portal persistence
 
 The Platform Admin dashboard is connected end to end to the domain microservices. Reads and mutations pass through the authenticated Next.js backend proxy into Spring Boot services, and each service persists its own data in a Flyway-managed MySQL database. The browser does not use mock data or local storage for business records. See `Front End/Web/README.md` for supported administration modules and local verification commands.
+The current administration workspace includes Studios, Publishers, Clients, Games, Versions, Builds, Releases, Deployments, API keys, Contracts, Revenue Rules, Transaction Ledger, Invoices, Incidents, and Audit Logs. Development URLs are stable at Admin `3000`, Studio `3002`, and Client `3003`; both `localhost` and `127.0.0.1` are supported by the Next.js development-origin configuration.

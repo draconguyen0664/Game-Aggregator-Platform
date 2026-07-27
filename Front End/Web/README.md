@@ -157,12 +157,10 @@ cd Backend/infrastructure/docker
 docker compose --env-file .env -f compose.yml up -d --build
 
 cd ../../../Front End/Web
-pnpm --filter platform-admin-portal dev -p 3000
-pnpm --filter studio-portal dev -p 3002
-pnpm --filter client-portal dev -p 3003
+pnpm dev
 ```
 
-Portal URLs are `http://localhost:3000`, `http://localhost:3002`, and `http://localhost:3003`. The Go API-key gateway remains at `http://localhost:8080` for external/runtime API traffic; web management authentication uses the same-origin BFF and Spring auth service on port `8081`.
+Each application script owns its fixed port, so the monorepo command always maps Admin to `3000`, Studio to `3002`, and Client to `3003`. Portal URLs are `http://localhost:3000`, `http://localhost:3002`, and `http://localhost:3003`. The Go API-key gateway remains at `http://localhost:8080` for external/runtime API traffic; web management authentication uses the same-origin BFF and Spring auth service on port `8081`.
 ### Optional authenticated E2E check
 
 A local bootstrap administrator can be tested without committing credentials:
@@ -186,10 +184,16 @@ Core administration capabilities include:
 - Responsive dashboard and API health summary.
 - Searchable Studio, Publisher, and Client organization views.
 - Persistent Game creation and archive lifecycle.
+- Version, build, release, and deployment inventory from their owning services.
 - API key creation, one-time secret display, rotation, revocation, and deletion. Only the key hash and safe metadata are stored.
-- Contract, revenue rule, invoice, incident, and audit views backed by their isolated services.
+- Contract, revenue rule, transaction ledger, invoice, incident, and audit views backed by their isolated services.
 - React Query cache invalidation after mutations so the UI immediately reloads database state.
 
 Run the backend infrastructure first, sign in with an authorized platform administrator, and start the web monorepo. `NEXT_PUBLIC_API_BASE_URL` defaults to `/backend`; service destinations can be overridden with the `BACKEND_<SERVICE>_URL` variables documented in each portal `.env.example`.
 
 The web portals accept both `localhost` and `127.0.0.1` during local development. Next.js dev-origin protection is configured in every portal so client hydration, HMR, authentication forms, and interactive controls work with either hostname.
+### Interactive development troubleshooting
+
+If the page renders but buttons, forms, or tabs do nothing, the client bundle did not hydrate. Do not start another copy of the monorepo. Stop duplicate Next.js/Turborepo processes, remove only the affected app's generated `.next` directory, and run `pnpm dev` once from `Front End/Web`. Use `Ctrl+F5` after the servers are healthy.
+
+Empty tables are valid when the service databases contain no records. Create records from the portal forms or load development seed data through backend APIs; business records are never fabricated in the browser.
