@@ -197,3 +197,9 @@ The web portals accept both `localhost` and `127.0.0.1` during local development
 If the page renders but buttons, forms, or tabs do nothing, the client bundle did not hydrate. Do not start another copy of the monorepo. Stop duplicate Next.js/Turborepo processes, remove only the affected app's generated `.next` directory, and run `pnpm dev` once from `Front End/Web`. Use `Ctrl+F5` after the servers are healthy.
 
 Empty tables are valid when the service databases contain no records. Create records from the portal forms or load development seed data through backend APIs; business records are never fabricated in the browser.
+
+## Color themes
+
+Admin, Studio, and Client portals share a responsive `Light`, `Dark`, and `System` theme selector. The selector is available on every authentication screen and dashboard header, including mobile layouts. `System` follows the operating-system preference and updates while the application is open. The selected preference is stored locally under `ga_theme`; only this display preference is stored, never business or authentication data.
+
+A pre-hydration theme script applies the saved or system theme before the first browser paint, preventing a light-to-dark flash. Shared semantic tokens in `design-tokens` drive surfaces, text, borders, controls, overlays, status badges, permission warnings, and API-key dialogs across all portals. New UI must use these semantic variables or include equivalent `dark:` states rather than assuming a white background.

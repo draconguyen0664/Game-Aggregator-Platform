@@ -6,3 +6,16 @@ Object.defineProperties(HTMLElement.prototype, {
   releasePointerCapture: { configurable: true, value: () => undefined },
   scrollIntoView: { configurable: true, value: () => undefined },
 });
+Object.defineProperty(window, "matchMedia", {
+  configurable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+    addListener: () => undefined,
+    removeListener: () => undefined,
+    dispatchEvent: () => false,
+  }),
+});
