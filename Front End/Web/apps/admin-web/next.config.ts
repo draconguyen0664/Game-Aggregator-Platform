@@ -29,6 +29,7 @@ const routes = [
 ] as const;
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["localhost", "127.0.0.1"],
   turbopack: { root: fileURLToPath(new URL("../..", import.meta.url)) },
   transpilePackages: ["@game-aggregator/api-client", "@game-aggregator/auth", "@game-aggregator/design-tokens", "@game-aggregator/types", "@game-aggregator/ui-web", "@game-aggregator/validation"],
   async rewrites() { return routes.map(([source, destination]) => ({ source, destination })); },

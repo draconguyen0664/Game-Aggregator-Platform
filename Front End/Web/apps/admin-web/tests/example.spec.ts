@@ -31,3 +31,10 @@ test("super admin can sign in", async ({ page }) => {
   await page.getByRole("option", { name: "Atlas Publishing" }).click();
   await expect(tenantSelect).toContainText("Atlas Publishing");
 });
+test("hydrates on the loopback IP origin", async ({ page }) => {
+  await page.goto("http://127.0.0.1:3000/login");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.waitForTimeout(300);
+  await expect(page).toHaveURL("http://127.0.0.1:3000/login");
+  await expect(page.getByText("Enter a valid email address")).toBeVisible();
+});

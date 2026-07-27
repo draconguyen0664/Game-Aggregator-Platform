@@ -191,3 +191,5 @@ Core administration capabilities include:
 - React Query cache invalidation after mutations so the UI immediately reloads database state.
 
 Run the backend infrastructure first, sign in with an authorized platform administrator, and start the web monorepo. `NEXT_PUBLIC_API_BASE_URL` defaults to `/backend`; service destinations can be overridden with the `BACKEND_<SERVICE>_URL` variables documented in each portal `.env.example`.
+
+The web portals accept both `localhost` and `127.0.0.1` during local development. Next.js dev-origin protection is configured in every portal so client hydration, HMR, authentication forms, and interactive controls work with either hostname.
