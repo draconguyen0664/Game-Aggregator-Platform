@@ -8,10 +8,10 @@ import {
   type HTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
-  type SelectHTMLAttributes,
   type TableHTMLAttributes,
 } from "react";
-import { X } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, X } from "lucide-react";
+import * as RadixSelect from "@radix-ui/react-select";
 import { cva, type VariantProps } from "class-variance-authority";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -100,40 +100,28 @@ export const Input = forwardRef<
 });
 Input.displayName = "Input";
 
-export const Select = forwardRef<
-  HTMLSelectElement,
-  SelectHTMLAttributes<HTMLSelectElement> &
-    FieldProps & { options: Array<{ label: string; value: string }> }
->(({ className, label, hint, error, options, id, ...props }, ref) => {
-  const selectId = id ?? props.name;
-  return (
-    <label className="grid gap-1.5 text-sm" htmlFor={selectId}>
-      {label && <span className="font-medium">{label}</span>}
-      <select
-        ref={ref}
-        id={selectId}
-        aria-invalid={Boolean(error)}
-        className={cn("ga-control w-full px-3", className)}
-        {...props}
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      {(error || hint) && (
-        <span
-          className={cn(
-            "text-xs text-[var(--ga-muted-foreground)]",
-            error && "text-[var(--ga-danger)]",
-          )}
-        >
-          {error ?? hint}
-        </span>
-      )}
-    </label>
-  );
+export interface SelectOption { label: string; value: string; disabled?: boolean; description?: string; }
+export interface SelectProps extends FieldProps {
+  options: SelectOption[]; value?: string; defaultValue?: string; onValueChange?: (value: string) => void;
+  name?: string; id?: string; placeholder?: string; disabled?: boolean; required?: boolean;
+  ariaLabel?: string; className?: string; triggerClassName?: string; size?: "sm" | "md";
+}
+export const Select = forwardRef<HTMLButtonElement, SelectProps>(({ className, triggerClassName, label, hint, error, options, id, name, placeholder="Select an option", size="md", ariaLabel, ...props }, ref) => {
+  const selectId=id??name; const descriptionId=selectId?`${selectId}-description`:undefined;
+  return <div className={cn("grid gap-1.5 text-sm",className)}>
+    {label&&<label className="font-medium" htmlFor={selectId}>{label}</label>}
+    <RadixSelect.Root {...props} name={name}>
+      <RadixSelect.Trigger ref={ref} id={selectId} aria-label={ariaLabel??label} aria-invalid={Boolean(error)} aria-describedby={error||hint?descriptionId:undefined} className={cn("ga-control group inline-flex w-full items-center justify-between gap-2 px-3 text-left shadow-sm data-[placeholder]:text-[var(--ga-muted-foreground)] data-[state=open]:border-[var(--ga-ring)] data-[state=open]:ring-3 data-[state=open]:ring-[color-mix(in_oklch,var(--ga-ring)_18%,transparent)]",size==="sm"?"h-8 text-xs":"h-9 text-sm",triggerClassName)}>
+        <RadixSelect.Value placeholder={placeholder}/><RadixSelect.Icon><ChevronDown className="size-4 text-[var(--ga-muted-foreground)] transition-transform group-data-[state=open]:rotate-180"/></RadixSelect.Icon>
+      </RadixSelect.Trigger>
+      <RadixSelect.Portal><RadixSelect.Content position="popper" sideOffset={6} collisionPadding={12} className="z-[100] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-xl border border-[var(--ga-border)] bg-[var(--ga-surface)] text-[var(--ga-foreground)] shadow-[var(--ga-shadow-md)] data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out data-[state=open]:fade-in data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
+        <RadixSelect.ScrollUpButton className="flex h-7 items-center justify-center"><ChevronUp className="size-4"/></RadixSelect.ScrollUpButton>
+        <RadixSelect.Viewport className="max-h-[min(20rem,var(--radix-select-content-available-height))] p-1.5">{options.map(option=><RadixSelect.Item key={option.value} value={option.value} disabled={option.disabled} className="relative flex min-h-9 cursor-default select-none items-center rounded-lg py-2 pl-9 pr-3 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-45 data-[highlighted]:bg-[var(--ga-surface-muted)] data-[highlighted]:text-[var(--ga-foreground)]"><span className="absolute left-2.5 grid size-4 place-items-center"><RadixSelect.ItemIndicator><Check className="size-4 text-[var(--ga-primary)]"/></RadixSelect.ItemIndicator></span><span><RadixSelect.ItemText>{option.label}</RadixSelect.ItemText>{option.description&&<span className="mt-0.5 block text-xs text-[var(--ga-muted-foreground)]">{option.description}</span>}</span></RadixSelect.Item>)}</RadixSelect.Viewport>
+        <RadixSelect.ScrollDownButton className="flex h-7 items-center justify-center"><ChevronDown className="size-4"/></RadixSelect.ScrollDownButton>
+      </RadixSelect.Content></RadixSelect.Portal>
+    </RadixSelect.Root>
+    {(error||hint)&&<span id={descriptionId} className={cn("text-xs text-[var(--ga-muted-foreground)]",error&&"text-[var(--ga-danger)]")}>{error??hint}</span>}
+  </div>;
 });
 Select.displayName = "Select";
 

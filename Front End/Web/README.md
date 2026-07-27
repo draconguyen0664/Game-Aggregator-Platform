@@ -174,3 +174,6 @@ pnpm --filter platform-admin-portal exec playwright test --reporter=line
 ```
 
 The test is skipped when these process-only environment variables are absent. Never place bootstrap passwords or internal registration keys in committed `.env.example` files.
+## Select and dropdown standard
+
+All web portals use the shared Radix UI-based `Select` from `@game-aggregator/ui-web`; native HTML `<select>` controls are not used in application source. The component provides portal-based positioning, viewport collision handling, keyboard navigation, focus management, selected indicators, validation states, compact sizing, and responsive app-shell variants. Add new select controls through the shared component so Storybook, accessibility tests, and visual behavior remain consistent across Admin, Studio, and Client portals.

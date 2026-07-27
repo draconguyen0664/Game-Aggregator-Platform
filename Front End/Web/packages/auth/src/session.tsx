@@ -20,6 +20,6 @@ export function BrowserAuthGuard({ children, apiBaseUrl = process.env.NEXT_PUBLI
       .catch(error => { if (error instanceof DOMException && error.name === "AbortError") return; clearBrowserSession(); window.location.assign("/session-expired"); });
     return () => controller.abort();
   }, [apiBaseUrl]);
-  if (state !== "authenticated") return <main className="grid min-h-dvh place-items-center bg-[var(--ga-background)]"><div className="grid justify-items-center gap-3"><span className="size-9 animate-spin rounded-full border-2 border-[var(--ga-border)] border-t-[var(--ga-primary)]"/><p className="text-sm text-[var(--ga-muted-foreground)]">Checking your secure sessionÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦</p></div></main>;
+  if (state !== "authenticated") return <main className="grid min-h-dvh place-items-center bg-[var(--ga-background)]"><div className="grid justify-items-center gap-3"><span className="size-9 animate-spin rounded-full border-2 border-[var(--ga-border)] border-t-[var(--ga-primary)]"/><p className="text-sm text-[var(--ga-muted-foreground)]">Checking your secure session...</p></div></main>;
   return children;
 }

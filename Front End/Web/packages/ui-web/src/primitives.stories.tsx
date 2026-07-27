@@ -40,11 +40,23 @@ export const FormControls: Story = {
       <Input label="Slug" value="Invalid slug!" error="Use lowercase letters and hyphens." readOnly />
       <Select
         label="Environment"
+        defaultValue="development"
         options={[
-          { label: "Development", value: "development" },
-          { label: "Staging", value: "staging" },
-          { label: "Production", value: "production" },
+          { label: "Development", value: "development", description: "Local and shared development workloads" },
+          { label: "Staging", value: "staging", description: "Pre-production verification" },
+          { label: "Production", value: "production", description: "Customer-facing traffic" },
         ]}
+        hint="Changing environments updates the active workspace."
+      />
+      <Select
+        label="Tenant"
+        placeholder="Select a tenant"
+        options={[
+          { label: "Northwind Games", value: "northwind" },
+          { label: "Atlas Publishing", value: "atlas" },
+          { label: "Archived tenant", value: "archived", disabled: true },
+        ]}
+        error="Select a tenant to continue."
       />
     </div>
   ),

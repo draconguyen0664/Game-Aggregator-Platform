@@ -7,9 +7,13 @@ describe("web design system foundation", () => {
   it("exposes accessible form controls", async () => {
     const user = userEvent.setup();
     const onClick = vi.fn();
-    render(<div><Input label="Search" name="search" /><Select label="Environment" name="environment" options={[{label:"Sandbox",value:"sandbox"}]} /><Button onClick={onClick}>Apply</Button></div>);
+    render(<div><Input label="Search" name="search" /><Select label="Environment" name="environment" defaultValue="sandbox" options={[{label:"Sandbox",value:"sandbox"},{label:"Production",value:"production"}]} /><Button onClick={onClick}>Apply</Button></div>);
     expect(screen.getByLabelText("Search")).toBeInTheDocument();
-    expect(screen.getByLabelText("Environment")).toHaveValue("sandbox");
+    const environment = screen.getByRole("combobox", { name: "Environment" });
+    expect(environment).toHaveTextContent("Sandbox");
+    await user.click(environment);
+    await user.click(screen.getByRole("option", { name: "Production" }));
+    expect(environment).toHaveTextContent("Production");
     await user.click(screen.getByRole("button", { name: "Apply" }));
     expect(onClick).toHaveBeenCalledOnce();
   });

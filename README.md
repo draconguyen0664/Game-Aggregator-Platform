@@ -436,6 +436,8 @@ pnpm build
 pnpm check
 ```
 
+All three web portals use the shared `@game-aggregator/ui-web` design system. Select controls are built on Radix UI instead of native HTML `<select>` elements, providing consistent responsive styling, keyboard navigation, focus management, validation states, and collision-aware dropdown positioning. Review and develop shared UI states in Storybook before adding portal-specific variants.
+
 ### Automatic README Updates
 
 The `.github/workflows/update-readme.yml` workflow regenerates the project inventory and service port table when backend or frontend code changes. Pull requests verify that generated sections are current, while pushes to `main` commit any generated README changes automatically.
