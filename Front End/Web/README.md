@@ -163,3 +163,14 @@ pnpm --filter client-portal dev -p 3003
 ```
 
 Portal URLs are `http://localhost:3000`, `http://localhost:3002`, and `http://localhost:3003`. The Go API-key gateway remains at `http://localhost:8080` for external/runtime API traffic; web management authentication uses the same-origin BFF and Spring auth service on port `8081`.
+### Optional authenticated E2E check
+
+A local bootstrap administrator can be tested without committing credentials:
+
+```powershell
+$env:E2E_SUPER_ADMIN_EMAIL = "your-local-admin@example.com"
+$env:E2E_SUPER_ADMIN_PASSWORD = "your-local-password"
+pnpm --filter platform-admin-portal exec playwright test --reporter=line
+```
+
+The test is skipped when these process-only environment variables are absent. Never place bootstrap passwords or internal registration keys in committed `.env.example` files.
