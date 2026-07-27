@@ -3,12 +3,10 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Laptop, Moon, Sun } from "lucide-react";
 import { Select, cn } from "./primitives";
+import { THEME_MEDIA_QUERY, THEME_STORAGE_KEY } from "./theme-config";
 
 export type ThemePreference = "light" | "dark" | "system";
 type ResolvedTheme = "light" | "dark";
-
-const STORAGE_KEY = "ga_theme";
-const DARK_MEDIA_QUERY = "(prefers-color-scheme: dark)";
 
 interface ThemeContextValue {
   theme: ThemePreference;
@@ -24,7 +22,7 @@ function isThemePreference(value: string | null): value is ThemePreference {
 
 function resolveTheme(theme: ThemePreference): ResolvedTheme {
   if (theme !== "system") return theme;
-  return window.matchMedia(DARK_MEDIA_QUERY).matches ? "dark" : "light";
+  return window.matchMedia(THEME_MEDIA_QUERY).matches ? "dark" : "light";
 }
 
 function applyTheme(theme: ResolvedTheme) {
@@ -38,7 +36,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
 
   useEffect(() => {
-    const savedTheme = window.localStorage.getItem(STORAGE_KEY);
+    const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
     const initialTheme = isThemePreference(savedTheme) ? savedTheme : "system";
     const initialResolved = resolveTheme(initialTheme);
     setThemeState(initialTheme);
@@ -47,7 +45,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const media = window.matchMedia(DARK_MEDIA_QUERY);
+    const media = window.matchMedia(THEME_MEDIA_QUERY);
     const updateSystemTheme = () => {
       if (theme !== "system") return;
       const nextTheme = media.matches ? "dark" : "light";
@@ -59,7 +57,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme]);
 
   const setTheme = (nextTheme: ThemePreference) => {
-    window.localStorage.setItem(STORAGE_KEY, nextTheme);
+    window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
     const nextResolved = resolveTheme(nextTheme);
     setThemeState(nextTheme);
     setResolvedTheme(nextResolved);
@@ -89,9 +87,4 @@ export function ThemeSwitcher({ className, showLabel = false }: { className?: st
     <Icon className="size-4 shrink-0 text-[var(--ga-muted-foreground)]" aria-hidden="true" />
     <Select ariaLabel="Color theme" value={theme} onValueChange={(value) => setTheme(value as ThemePreference)} options={themeOptions} size="sm" className={showLabel ? "min-w-32" : "w-24"} triggerClassName={showLabel ? "w-32" : "w-24"} />
   </div>;
-}
-
-export function ThemeScript() {
-  const script = `(() => { try { const saved = localStorage.getItem("${STORAGE_KEY}"); const preference = saved === "light" || saved === "dark" || saved === "system" ? saved : "system"; const resolved = preference === "system" ? (matchMedia("${DARK_MEDIA_QUERY}").matches ? "dark" : "light") : preference; document.documentElement.classList.toggle("dark", resolved === "dark"); document.documentElement.style.colorScheme = resolved; document.documentElement.dataset.theme = resolved; } catch (_) {} })();`;
-  return <script dangerouslySetInnerHTML={{ __html: script }} />;
 }

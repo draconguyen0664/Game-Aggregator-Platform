@@ -47,5 +47,5 @@ test("renders the theme bootstrap script without console errors", async ({ page 
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/login");
   await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
-  expect(errors.filter((message) => message.includes("Cannot render a sync or defer <script>"))).toEqual([]);
+  expect(errors).toEqual([]);
 });
