@@ -133,3 +133,15 @@ The generated schema is written to `packages/api-client/src/generated/schema.ts`
 ## CI
 
 `.github/workflows/frontend-ci.yml` installs dependencies from the frozen lockfile, runs typecheck and lint, builds Storybook, and creates production builds for all portals on Web-related pull requests and pushes to `main`.
+## Authentication and application shell
+
+Each portal provides the same responsive authentication flow while retaining its own portal identity:
+
+- `/login`, `/forgot-password`, `/reset-password`, and `/mfa`
+- `/session-expired`, `/tenant-selector`, `/unauthorized`, and `/account-locked`
+
+The dashboard application shell includes a collapsible desktop sidebar, mobile navigation drawer, breadcrumbs, `Ctrl/Cmd + K` command palette, notification drawer, user menu, tenant selector, and environment selector. Mobile selectors remain available below the header on narrow screens.
+
+Permission primitives are exported by `@game-aggregator/auth`: `RouteGuard`, `PermissionGate`, `GuardedButton`, `PermissionWarning`, and `ReadOnly`. The access token endpoint defaults to `http://localhost:8080`; set `NEXT_PUBLIC_API_BASE_URL` for another gateway URL.
+
+For production authentication, terminate sessions through a same-origin BFF or secure `HttpOnly` cookies rather than persisting refresh credentials in browser storage.

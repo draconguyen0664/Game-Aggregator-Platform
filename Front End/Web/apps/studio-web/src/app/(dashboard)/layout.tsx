@@ -1,0 +1,2 @@
+import { PortalShell } from "../../components/portal-shell";
+export default function DashboardLayout({ children }: Readonly<{ children: React.ReactNode }>) { return <PortalShell>{children}</PortalShell>; }

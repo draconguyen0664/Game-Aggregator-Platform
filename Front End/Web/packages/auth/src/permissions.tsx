@@ -1,0 +1,12 @@
+"use client";
+import type { ButtonHTMLAttributes, PropsWithChildren, ReactNode } from "react";
+import { AlertTriangle, LockKeyhole } from "lucide-react";
+import { Button, cn } from "@game-aggregator/ui-web";
+import { useAuth } from "./session";
+
+export function usePermission(permission: string) { const { session } = useAuth(); return session?.permissions.includes(permission) ?? false; }
+export function PermissionGate({ permission, children, fallback = null }: PropsWithChildren<{ permission: string; fallback?: ReactNode }>) { return usePermission(permission) ? children : fallback; }
+export function RouteGuard({ permission, children }: PropsWithChildren<{ permission: string }>) { const allowed = usePermission(permission); if (allowed) return children; return <div className="grid min-h-[60vh] place-items-center p-6"><div className="max-w-md text-center"><LockKeyhole className="mx-auto size-10 text-[var(--ga-muted-foreground)]"/><h1 className="mt-4 text-xl font-semibold">Access restricted</h1><p className="mt-2 text-sm text-[var(--ga-muted-foreground)]">You do not have the <code>{permission}</code> permission for this tenant.</p></div></div>; }
+export function GuardedButton({ permission, hideWhenDenied = false, deniedReason = "You do not have permission for this action", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { permission: string; hideWhenDenied?: boolean; deniedReason?: string }) { const allowed = usePermission(permission); if (!allowed && hideWhenDenied) return null; return <Button {...props} disabled={!allowed || props.disabled} title={!allowed ? deniedReason : props.title}/>; }
+export function PermissionWarning({ permission, className }: { permission: string; className?: string }) { if (usePermission(permission)) return null; return <div role="status" className={cn("flex gap-3 rounded-[var(--ga-radius-md)] border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900", className)}><AlertTriangle className="size-5 shrink-0"/><p>Your role does not include <strong>{permission}</strong>. Some controls are read-only.</p></div>; }
+export function ReadOnly({ permission, children }: PropsWithChildren<{ permission: string }>) { const allowed = usePermission(permission); return <fieldset disabled={!allowed} aria-readonly={!allowed} className={cn(!allowed && "opacity-70")}>{children}</fieldset>; }
