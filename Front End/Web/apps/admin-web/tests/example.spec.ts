@@ -21,6 +21,10 @@ test("super admin can sign in", async ({ page }) => {
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole("heading", { name: "Operations overview" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Platform administration" })).toBeVisible();
+  await expect(page.getByText("Total games")).toBeVisible();
+  await page.getByRole("tab", { name: "API keys" }).click();
+  await expect(page.getByRole("heading", { name: "API keys", exact: true })).toBeVisible();
   const tenantSelect = page.getByRole("combobox", { name: "Tenant" });
   await tenantSelect.click();
   await expect(page.getByRole("option", { name: "Atlas Publishing" })).toBeVisible();

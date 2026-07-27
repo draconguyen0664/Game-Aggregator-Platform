@@ -459,3 +459,6 @@ Only content between `BEGIN GENERATED` and `END GENERATED` comments is replaced.
 4. Add or update tests.
 5. Run the relevant local builds and tests.
 6. Open a pull request that clearly describes the changes, migrations, and new environment variables.
+### Platform Admin Portal persistence
+
+The Platform Admin dashboard is connected end to end to the domain microservices. Reads and mutations pass through the authenticated Next.js backend proxy into Spring Boot services, and each service persists its own data in a Flyway-managed MySQL database. The browser does not use mock data or local storage for business records. See `Front End/Web/README.md` for supported administration modules and local verification commands.

@@ -49,3 +49,4 @@ export const managementEndpoints = {
 export function createManagementApiClient(options: Omit<ApiClientOptions, "baseUrl"> = {}) {
   return createApiClient({ ...options, baseUrl: managementApiBaseUrl });
 }
+export * from "./management";

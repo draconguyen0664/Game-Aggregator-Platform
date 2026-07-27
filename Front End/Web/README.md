@@ -177,3 +177,17 @@ The test is skipped when these process-only environment variables are absent. Ne
 ## Select and dropdown standard
 
 All web portals use the shared Radix UI-based `Select` from `@game-aggregator/ui-web`; native HTML `<select>` controls are not used in application source. The component provides portal-based positioning, viewport collision handling, keyboard navigation, focus management, selected indicators, validation states, compact sizing, and responsive app-shell variants. Add new select controls through the shared component so Storybook, accessibility tests, and visual behavior remain consistent across Admin, Studio, and Client portals.
+## Platform Admin data flow
+
+The Platform Admin Portal is an authenticated React Query control plane backed by the Spring Boot microservices and their dedicated MySQL schemas. Dashboard totals, organization lists, games, API keys, contracts, revenue rules, invoices, incidents, and audit records are loaded from live APIs through the same-origin `/backend` proxy. Create and lifecycle actions never use browser mock storage: they are validated by the owning service and committed through Spring Data JPA/Flyway-managed tables.
+
+Core administration capabilities include:
+
+- Responsive dashboard and API health summary.
+- Searchable Studio, Publisher, and Client organization views.
+- Persistent Game creation and archive lifecycle.
+- API key creation, one-time secret display, rotation, revocation, and deletion. Only the key hash and safe metadata are stored.
+- Contract, revenue rule, invoice, incident, and audit views backed by their isolated services.
+- React Query cache invalidation after mutations so the UI immediately reloads database state.
+
+Run the backend infrastructure first, sign in with an authorized platform administrator, and start the web monorepo. `NEXT_PUBLIC_API_BASE_URL` defaults to `/backend`; service destinations can be overridden with the `BACKEND_<SERVICE>_URL` variables documented in each portal `.env.example`.
