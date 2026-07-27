@@ -13,7 +13,7 @@ export interface AuthScreenProps { mode: AuthScreenMode; portalName: string; por
 
 const defaultTenants: TenantOption[] = [{ id: "northwind", name: "Northwind Games", role: "Studio administrator", initials: "NG" }, { id: "atlas", name: "Atlas Publishing", role: "Release manager", initials: "AP" }, { id: "sandbox", name: "Personal Sandbox", role: "Developer", initials: "PS" }];
 
-export function AuthScreen({ mode, portalName, portalLabel, apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080", tenants = defaultTenants }: AuthScreenProps) {
+export function AuthScreen({ mode, portalName, portalLabel, apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "/backend", tenants = defaultTenants }: AuthScreenProps) {
   return <AuthCanvas portalName={portalName} portalLabel={portalLabel}>{mode === "login" && <LoginForm apiBaseUrl={apiBaseUrl}/>} {mode === "forgot-password" && <ForgotPasswordForm apiBaseUrl={apiBaseUrl}/>} {mode === "reset-password" && <ResetPasswordForm apiBaseUrl={apiBaseUrl}/>} {mode === "mfa" && <MfaForm/>} {mode === "session-expired" && <StatusCard icon={<RefreshCcw/>} eyebrow="Session expired" title="Welcome back" description="Your session ended to keep your account secure. Sign in again to continue where you left off." action="Sign in again" href="/login"/>} {mode === "tenant-selector" && <TenantSelector tenants={tenants}/>} {mode === "unauthorized" && <StatusCard icon={<LockKeyhole/>} eyebrow="Access denied" title="You cannot view this page" description="Your current role does not include the required permission. Switch tenant or ask an administrator for access." action="Switch tenant" href="/tenant-selector" secondary="Return to dashboard"/>} {mode === "account-locked" && <StatusCard icon={<TriangleAlert/>} eyebrow="Account protected" title="Your account is temporarily locked" description="We detected too many unsuccessful sign-in attempts. Try again in 14 minutes or reset your password now." action="Reset password" href="/forgot-password" secondary="Contact support" tone="danger"/>}</AuthCanvas>;
 }
 
@@ -28,7 +28,7 @@ function AuthCanvas({ portalName, portalLabel, children }: { portalName: string;
     <section className="flex min-h-dvh flex-col">
       <div className="flex items-center justify-between border-b border-[var(--ga-border)] bg-[var(--ga-surface)] px-5 py-4 lg:hidden"><div className="flex items-center gap-2.5"><BrandMark compact/><div><div className="text-sm font-semibold">{portalName}</div><div className="text-[11px] text-[var(--ga-muted-foreground)]">{portalLabel}</div></div></div><ShieldCheck className="size-5 text-[var(--ga-primary)]"/></div>
       <div className="flex flex-1 items-center justify-center px-5 py-10 sm:px-8 lg:px-12"><div className="w-full max-w-[27rem]">{children}</div></div>
-      <footer className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 px-5 pb-6 text-xs text-[var(--ga-muted-foreground)]"><a href="#">Privacy</a><a href="#">Security</a><a href="#">Help center</a><span>© 2026 Game Aggregator</span></footer>
+      <footer className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 px-5 pb-6 text-xs text-[var(--ga-muted-foreground)]"><a href="#">Privacy</a><a href="#">Security</a><a href="#">Help center</a><span>Â© 2026 Game Aggregator</span></footer>
     </section>
   </main>;
 }

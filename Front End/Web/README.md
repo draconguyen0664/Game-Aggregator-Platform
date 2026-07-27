@@ -142,6 +142,22 @@ Each portal provides the same responsive authentication flow while retaining its
 
 The dashboard application shell includes a collapsible desktop sidebar, mobile navigation drawer, breadcrumbs, `Ctrl/Cmd + K` command palette, notification drawer, user menu, tenant selector, and environment selector. Mobile selectors remain available below the header on narrow screens.
 
-Permission primitives are exported by `@game-aggregator/auth`: `RouteGuard`, `PermissionGate`, `GuardedButton`, `PermissionWarning`, and `ReadOnly`. The access token endpoint defaults to `http://localhost:8080`; set `NEXT_PUBLIC_API_BASE_URL` for another gateway URL.
+Permission primitives are exported by `@game-aggregator/auth`: `RouteGuard`, `PermissionGate`, `GuardedButton`, `PermissionWarning`, and `ReadOnly`. Browser requests use the same-origin `/backend` path. Next.js rewrites management traffic to the appropriate Spring service (`8081` through `8103`), so credentials and CORS configuration are not exposed to the browser. Copy an app-specific `.env.example` to `.env.local` only when overriding backend hosts.
 
 For production authentication, terminate sessions through a same-origin BFF or secure `HttpOnly` cookies rather than persisting refresh credentials in browser storage.
+
+## Local full-stack ports
+
+Start Docker infrastructure and backend services first, then run the portals on stable ports:
+
+```powershell
+cd Backend/infrastructure/docker
+docker compose --env-file .env -f compose.yml up -d --build
+
+cd ../../../Front End/Web
+pnpm --filter platform-admin-portal dev -p 3000
+pnpm --filter studio-portal dev -p 3002
+pnpm --filter client-portal dev -p 3003
+```
+
+Portal URLs are `http://localhost:3000`, `http://localhost:3002`, and `http://localhost:3003`. The Go API-key gateway remains at `http://localhost:8080` for external/runtime API traffic; web management authentication uses the same-origin BFF and Spring auth service on port `8081`.
