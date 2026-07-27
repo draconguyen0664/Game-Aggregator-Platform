@@ -2,7 +2,9 @@
   "name": "@game-aggregator/ui-web",
   "version": "0.1.0",
   "private": true,
-  "sideEffects": ["*.css"],
+  "sideEffects": [
+    "*.css"
+  ],
   "exports": {
     ".": "./src/index.ts",
     "./styles.css": "./styles.css"
@@ -11,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "test": "vitest run"
   },
   "dependencies": {
     "@game-aggregator/design-tokens": "workspace:*",
@@ -26,10 +29,15 @@
     "@storybook/addon-a11y": "^10.5.2",
     "@storybook/addon-docs": "^10.5.2",
     "@storybook/react-vite": "^10.5.2",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.2",
+    "@testing-library/user-event": "14.6.1",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "jsdom": "29.1.1",
     "storybook": "^10.5.2",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "4.1.10"
   },
   "peerDependencies": {
     "react": "^19.0.0",

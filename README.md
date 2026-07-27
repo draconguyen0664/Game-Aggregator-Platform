@@ -31,7 +31,7 @@ Game-Aggregator-Platform/
 |   |   |-- apps/                # Admin, studio, and client Next.js portals
 |   |   `-- packages/            # UI, tokens, API, auth, types, and validation
 |   `-- Mobile/
-`-- .github/workflows/backend-ci.yml
+`-- .github/workflows/         # Backend and frontend CI
 ```
 
 Each microservice and portal lives in its own directory and can be developed, tested, built, and deployed independently.
@@ -43,7 +43,7 @@ Each microservice and portal lives in its own directory and can be developed, te
 
 | Component | Count | Projects |
 |---|---:|---|
-| Spring Boot services | 22 | `api-key-service`, `audit-service`, `auth-service`, `authorization-service`, `billing-service`, `build-service`, `client-service`, `contract-service`, `deployment-service`, `entitlement-service`, `feature-flag-service`, `game-media-service`, `game-service`, `incident-service`, `ledger-service`, `publisher-service`, `release-service`, `revenue-service`, `studio-service`, `tenant-service`, `version-service`, `webhook-service` |
+| Spring Boot services | 22 | `api-key-service`, `audit-service`, `authorization-service`, `auth-service`, `billing-service`, `build-service`, `client-service`, `contract-service`, `deployment-service`, `entitlement-service`, `feature-flag-service`, `game-media-service`, `game-service`, `incident-service`, `ledger-service`, `publisher-service`, `release-service`, `revenue-service`, `studio-service`, `tenant-service`, `version-service`, `webhook-service` |
 | Go services | 4 | `analytics-consumer`, `api-gateway`, `log-ingestion`, `realtime-monitoring` |
 | Web portals | 3 | `admin-web`, `client-web`, `studio-web` |
 <!-- END GENERATED PROJECT INVENTORY -->
@@ -60,7 +60,7 @@ For local development:
 
 - Java 21 or later and Maven 3.9+
 - The Go version specified in `Backend/Golang/go.mod`
-- Node.js 20+ and npm 10+
+- Node.js 20+, pnpm 10+ for Web, and npm 10+ for Mobile
 - Expo Go or Android Studio/Xcode for native mobile development
 
 ## Quick Start: Run the Backend with Docker
@@ -239,7 +239,7 @@ go run ./services/api-gateway
 
 ## Run the Web Applications
 
-The three portals are independent Next.js applications in a pnpm and Turborepo workspace.
+The three portals are independent Next.js applications in a pnpm and Turborepo workspace. All portals consume the shared design tokens and `ui-web` package at runtime. Their landing dashboards demonstrate the common responsive layout, metrics, badges, tables, form controls, and empty states while retaining portal-specific content.
 
 Install dependencies once:
 
@@ -280,6 +280,8 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
+# Or run the complete validation pipeline:
+pnpm check
 ```
 
 Run the shared design system:
@@ -428,6 +430,8 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
+# Or run the complete validation pipeline:
+pnpm check
 ```
 
 ### Automatic README Updates
