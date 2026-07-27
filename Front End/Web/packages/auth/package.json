@@ -1,29 +1,29 @@
 {
-  "name": "@game-aggregator/auth",
-  "version": "0.1.0",
-  "private": true,
-  "exports": {
-    ".": "./src/index.ts"
-  },
-  "scripts": {
-    "typecheck": "tsc --noEmit",
-    "lint": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@game-aggregator/types": "workspace:*",
-    "@game-aggregator/ui-web": "workspace:*",
-    "@game-aggregator/validation": "workspace:*",
-    "@hookform/resolvers": "5.4.0",
-    "lucide-react": "1.25.0",
-    "react": "catalog:",
-    "react-hook-form": "7.82.0",
-    "zod": "catalog:"
-  },
-  "devDependencies": {
-    "@types/react": "catalog:",
-    "typescript": "catalog:"
-  },
-  "peerDependencies": {
-    "react": "^19.0.0"
-  }
+    "name":  "@game-aggregator/auth",
+    "version":  "0.1.0",
+    "private":  true,
+    "exports":  {
+                    ".":  "./src/index.ts"
+                },
+    "scripts":  {
+                    "typecheck":  "tsc --noEmit",
+                    "lint":  "tsc --noEmit"
+                },
+    "dependencies":  {
+                         "@game-aggregator/types":  "workspace:*",
+                         "@game-aggregator/ui-web":  "workspace:*",
+                         "@game-aggregator/validation":  "workspace:*",
+                         "@hookform/resolvers":  "5.4.0",
+                         "lucide-react":  "1.25.0",
+                         "react":  "catalog:",
+                         "react-hook-form":  "7.82.0",
+                         "zod":  "catalog:"
+                     },
+    "devDependencies":  {
+                            "@types/react":  "catalog:",
+                            "typescript":  "catalog:"
+                        },
+    "peerDependencies":  {
+                             "react":  "^19.0.0"
+                         }
 }

@@ -1,18 +1,13 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test('has title', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
-
-  // Expect a title "to contain" a substring.
-  await expect(page).toHaveTitle(/Playwright/);
+test("redirects anonymous users to login", async ({ page }) => {
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
 });
 
-test('get started link', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
-
-  // Click the get started link.
-  await page.getByRole('link', { name: 'Get started' }).click();
-
-  // Expects page to have a heading with the name of Installation.
-  await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
+test("shows invitation-only registration", async ({ page }) => {
+  await page.goto("/register");
+  await expect(page.getByRole("heading", { name: "Create your work account" })).toBeVisible();
+  await expect(page.getByLabel("Invitation key")).toBeVisible();
 });

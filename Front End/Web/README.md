@@ -137,8 +137,10 @@ The generated schema is written to `packages/api-client/src/generated/schema.ts`
 
 Each portal provides the same responsive authentication flow while retaining its own portal identity:
 
-- `/login`, `/forgot-password`, `/reset-password`, and `/mfa`
+- `/login`, invitation-only `/register`, `/forgot-password`, `/reset-password`, and `/mfa`
 - `/session-expired`, `/tenant-selector`, `/unauthorized`, and `/account-locked`
+
+Dashboard routes are protected by `BrowserAuthGuard`, which validates the stored access token against `/auth/me` and redirects anonymous users to `/login`. Registration requires the backend internal invitation key and is not public self-service.
 
 The dashboard application shell includes a collapsible desktop sidebar, mobile navigation drawer, breadcrumbs, `Ctrl/Cmd + K` command palette, notification drawer, user menu, tenant selector, and environment selector. Mobile selectors remain available below the header on narrow screens.
 
