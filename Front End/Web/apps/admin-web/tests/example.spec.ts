@@ -38,3 +38,14 @@ test("hydrates on the loopback IP origin", async ({ page }) => {
   await expect(page).toHaveURL("http://127.0.0.1:3000/login");
   await expect(page.getByText("Enter a valid email address")).toBeVisible();
 });
+
+test("renders the theme bootstrap script without console errors", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("/login");
+  await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
+  expect(errors.filter((message) => message.includes("Cannot render a sync or defer <script>"))).toEqual([]);
+});
