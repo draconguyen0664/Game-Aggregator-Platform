@@ -1,15 +1,4 @@
-"use client";
-import { AppShell } from "@game-aggregator/ui-web";
-import { BarChart3, Building2, Gamepad2, LayoutDashboard, Package, Rocket, Settings, ShieldCheck } from "lucide-react";
-import type { ReactNode } from "react";
-const navigation = [
-  { label: "Overview", href: "/", icon: <LayoutDashboard className="size-4"/>, active: true },
-  { label: "Applications", href: "/#applications", icon: <Building2 className="size-4"/> },
-  { label: "Entitlements", href: "/#entitlements", icon: <Gamepad2 className="size-4"/> },
-  { label: "API keys", href: "/#api-keys", icon: <Package className="size-4"/> },
-  { label: "Usage", href: "/#usage", icon: <Rocket className="size-4"/> },
-  { label: "Webhooks", href: "/#webhooks", icon: <ShieldCheck className="size-4"/> },
-  { label: "Environments", href: "/#environments", icon: <BarChart3 className="size-4"/> },
-  { label: "Settings", href: "/#settings", icon: <Settings className="size-4"/> },
-];
-export function PortalShell({ children }: { children: ReactNode }) { return <AppShell portalLabel="Client workspace" navigation={navigation}>{children}</AppShell>; }
+﻿"use client";
+import {AppShell} from "@game-aggregator/ui-web";import {BarChart3,Building2,Gamepad2,KeyRound,LayoutDashboard,Network,Settings,ShieldCheck,Webhook} from "lucide-react";import {useEffect,useState,type ReactNode} from "react";
+const items=[{label:"Overview",hash:"overview",icon:<LayoutDashboard className="size-4"/>},{label:"Available games",hash:"games",icon:<Gamepad2 className="size-4"/>},{label:"Applications",hash:"applications",icon:<Building2 className="size-4"/>},{label:"Entitlements",hash:"entitlements",icon:<ShieldCheck className="size-4"/>},{label:"API keys",hash:"api-keys",icon:<KeyRound className="size-4"/>},{label:"Usage & revenue",hash:"usage",icon:<BarChart3 className="size-4"/>},{label:"Webhooks",hash:"webhooks",icon:<Webhook className="size-4"/>},{label:"Environments",hash:"environments",icon:<Network className="size-4"/>},{label:"Settings",hash:"settings",icon:<Settings className="size-4"/>}];
+export function clientNavigation(hash:string){return items.map(x=>({label:x.label,href:`/#${x.hash}`,icon:x.icon,active:hash===x.hash}))}export function PortalShell({children}:{children:ReactNode}){const [hash,setHash]=useState("overview");useEffect(()=>{const update=()=>setHash(location.hash.slice(1)||"overview"),frame=requestAnimationFrame(update);addEventListener("hashchange",update);return()=>{cancelAnimationFrame(frame);removeEventListener("hashchange",update)}},[]);return <AppShell portalLabel="Client workspace" navigation={clientNavigation(hash)}>{children}</AppShell>}

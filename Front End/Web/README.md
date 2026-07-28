@@ -213,3 +213,7 @@ Studio users can create game projects, semantic versions, builds, sandbox or pro
 Dashboard metrics and analytics are calculated from live Game, Build, Release, Deployment, Incident, Ledger, and Studio Member records. Empty states therefore represent empty service databases rather than browser-generated sample data.
 
 Studio navigation exposes a dedicated hash-addressable view for Overview, Games, Builds, Releases, Media, Developer Integration, Team, and Analytics. The active item follows the current URL, browser back/forward navigation is supported, and the mobile drawer closes after selection so the destination content is immediately visible.
+
+## Client Portal operations
+
+The Client Portal now uses live Spring microservice data instead of browser fixtures. It provides a responsive game catalog and game detail view, client organization/application/environment selectors, application and environment creation, entitlement requests, API-key issuance with one-time secret display, webhook configuration, IP/domain allowlists, usage and revenue ledger summaries, invoices, contract status context, and a production-readiness checklist. All create actions use the same-origin /backend proxy and persist through the owning service; empty states reflect empty databases.
