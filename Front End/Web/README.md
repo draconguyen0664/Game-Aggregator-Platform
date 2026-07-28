@@ -211,3 +211,5 @@ The Studio Portal is a separate authenticated control plane for studio-owned wor
 Studio users can create game projects, semantic versions, builds, sandbox or production releases, API keys, webhooks, and team invitations. Media uploads follow the presigned flow: the browser requests a short-lived upload URL, sends the file directly to MinIO/S3, and asks the game-media service to persist metadata only after object upload succeeds. Raw API-key and webhook secrets are displayed once and are never stored in browser business state or plaintext database columns.
 
 Dashboard metrics and analytics are calculated from live Game, Build, Release, Deployment, Incident, Ledger, and Studio Member records. Empty states therefore represent empty service databases rather than browser-generated sample data.
+
+Studio navigation exposes a dedicated hash-addressable view for Overview, Games, Builds, Releases, Media, Developer Integration, Team, and Analytics. The active item follows the current URL, browser back/forward navigation is supported, and the mobile drawer closes after selection so the destination content is immediately visible.
