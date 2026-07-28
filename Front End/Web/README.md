@@ -203,3 +203,11 @@ Empty tables are valid when the service databases contain no records. Create rec
 Admin, Studio, and Client portals share a responsive `Light`, `Dark`, and `System` theme selector. The selector is available on every authentication screen and dashboard header, including mobile layouts. `System` follows the operating-system preference and updates while the application is open. The selected preference is stored locally under `ga_theme`; only this display preference is stored, never business or authentication data.
 
 A pre-hydration theme script applies the saved or system theme before the first browser paint, preventing a light-to-dark flash. Shared semantic tokens in `design-tokens` drive surfaces, text, borders, controls, overlays, status badges, permission warnings, and API-key dialogs across all portals. New UI must use these semantic variables or include equivalent `dark:` states rather than assuming a white background.
+
+## Studio Portal operations
+
+The Studio Portal is a separate authenticated control plane for studio-owned workflows. Its responsive, Light/Dark-aware console includes a live dashboard, game project inventory, developer integrations, team access, and derived analytics. Data is filtered by the selected studio and game instead of being shared with the Platform Admin presentation.
+
+Studio users can create game projects, semantic versions, builds, sandbox or production releases, API keys, webhooks, and team invitations. Media uploads follow the presigned flow: the browser requests a short-lived upload URL, sends the file directly to MinIO/S3, and asks the game-media service to persist metadata only after object upload succeeds. Raw API-key and webhook secrets are displayed once and are never stored in browser business state or plaintext database columns.
+
+Dashboard metrics and analytics are calculated from live Game, Build, Release, Deployment, Incident, Ledger, and Studio Member records. Empty states therefore represent empty service databases rather than browser-generated sample data.

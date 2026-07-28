@@ -1,2 +1,2 @@
-import { PortalOverview } from "@game-aggregator/ui-web";
-export default function Home() { return <PortalOverview eyebrow="Studio workspace" title="Studio Portal" description="Manage games, builds, media, releases, team access, and publishing workflows for your studio." actionLabel="Create game" metrics={[{label:"Published games",value:"14",change:"+2",tone:"success"},{label:"Draft releases",value:"6",change:"Needs review",tone:"warning"},{label:"Team members",value:"32",change:"4 invited",tone:"info"},{label:"Storage used",value:"68 GB",change:"34%",tone:"neutral"}]} activities={[{name:"Skyforge Arena",type:"Game",status:"Active",updatedAt:"5 min ago"},{name:"Android 3.4.1",type:"Build",status:"Ready",updatedAt:"22 min ago"},{name:"Summer assets",type:"Media",status:"Uploaded",updatedAt:"45 min ago"}]} />; }
+import { StudioPortalConsole } from "../../components/studio-portal-console";
+export default function Home(){return <StudioPortalConsole/>}

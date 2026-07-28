@@ -241,7 +241,7 @@ go run ./services/api-gateway
 
 The three portals are independent Next.js applications in a pnpm and Turborepo workspace. All portals consume the shared design tokens and `ui-web` package at runtime. Their landing dashboards demonstrate the common responsive layout, metrics, badges, tables, form controls, and empty states while retaining portal-specific content.
 
-All three portals now include a responsive authentication suite, adaptive application shell, tenant and environment switching, command palette, notifications, shared permission-aware UI guards, and persistent Light, Dark, and System color themes. Web management calls use a same-origin `/backend` BFF that routes to the corresponding Spring microservice, while the Go gateway remains API-key protected for runtime client traffic. See [Front End/Web/README.md](Front%20End/Web/README.md) for routes and integration details.
+All three portals now include a responsive authentication suite, adaptive application shell, tenant and environment switching, command palette, notifications, shared permission-aware UI guards, and persistent Light, Dark, and System color themes. The Studio Portal now provides a database-backed game delivery workspace for projects, versions, builds, releases, media, API keys, webhooks, team invitations, and live analytics. Web management calls use a same-origin `/backend` BFF that routes to the corresponding Spring microservice, while the Go gateway remains API-key protected for runtime client traffic. See [Front End/Web/README.md](Front%20End/Web/README.md) for routes and integration details.
 
 Install dependencies once:
 
