@@ -320,6 +320,8 @@ npm run test
 
 `npm run ios` requires macOS and Xcode. Android requires an emulator or a physical device. You can also scan the QR code with Expo Go.
 
+The Mobile application is an Ops Companion rather than a copy of the web portals. It provides secure login and biometric unlock, live operational metrics, incident acknowledgement/assignment/notes/resolution, deployment state actions, and notification preferences. Copy `Front End/Mobile/.env.example` to `.env`; Android Emulator reaches the local backend through `10.0.2.2`, while physical devices require the development computer's LAN address. Remote Android push notifications require an Expo development build.
+
 ## API, Authentication, and Multi-Tenancy
 
 - External requests enter through the Go API Gateway on port `8080`.

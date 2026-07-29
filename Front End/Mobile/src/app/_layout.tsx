@@ -1,18 +1,2 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
-
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
-
-SplashScreen.preventAutoHideAsync();
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
-  );
-}
+import {QueryClient,QueryClientProvider} from "@tanstack/react-query";import {Stack} from "expo-router";import * as Notifications from "expo-notifications";import {StatusBar} from "expo-status-bar";import {GestureHandlerRootView} from "react-native-gesture-handler";import {SafeAreaProvider} from "react-native-safe-area-context";import {c} from "@/theme";import * as Sentry from "@sentry/react-native";
+Sentry.init({dsn:process.env.EXPO_PUBLIC_SENTRY_DSN,enabled:Boolean(process.env.EXPO_PUBLIC_SENTRY_DSN),sendDefaultPii:false});const client=new QueryClient({defaultOptions:{queries:{retry:1,staleTime:15000}}});Notifications.setNotificationHandler({handleNotification:async()=>({shouldPlaySound:true,shouldSetBadge:true,shouldShowBanner:true,shouldShowList:true})});export default function Layout(){return <GestureHandlerRootView style={{flex:1}}><SafeAreaProvider><QueryClientProvider client={client}><StatusBar style="light"/><Stack screenOptions={{headerShown:false,contentStyle:{backgroundColor:c.bg}}}/></QueryClientProvider></SafeAreaProvider></GestureHandlerRootView>}

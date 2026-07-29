@@ -1,98 +1,13 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
-
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
-
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
-
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
-});
+import {zodResolver} from "@hookform/resolvers/zod";import {FlashList} from "@shopify/flash-list";import {useMutation,useQuery,useQueryClient} from "@tanstack/react-query";import * as LocalAuthentication from "expo-local-authentication";import * as Notifications from "expo-notifications";import * as SecureStore from "expo-secure-store";import {Controller,useForm} from "react-hook-form";import {useEffect,useState} from "react";import {KeyboardAvoidingView,Modal,Platform,Pressable,RefreshControl,ScrollView,Text,TextInput,View} from "react-native";import {SafeAreaView} from "react-native-safe-area-context";import {z} from "zod";import {Brand,Button,Card,Empty,Metric,Pill} from "@/components/ops-ui";import {api,type Entity} from "@/lib/api";import {c,r,s,t} from "@/theme";import {useOpsStore,type OpsTab} from "@/state/use-ops-store";
+const loginSchema=z.object({email:z.string().email("Enter a valid email"),password:z.string().min(8,"At least 8 characters")});type Login=z.infer<typeof loginSchema>;
+export default function App(){const [ready,setReady]=useState(false),[signed,setSigned]=useState(false),[stored,setStored]=useState(false);useEffect(()=>{SecureStore.getItemAsync("ga_access_token").then(token=>{setStored(!!token);setReady(true)})},[]);if(!ready)return <Safe><Empty loading title="Securing workspace"/></Safe>;if(!signed)return <LoginScreen stored={stored} success={()=>{setStored(true);setSigned(true)}}/>;return <Ops signOut={async()=>{await Promise.all([SecureStore.deleteItemAsync("ga_access_token"),SecureStore.deleteItemAsync("ga_refresh_token")]);setStored(false);setSigned(false)}}/>}
+function LoginScreen({stored,success}:{stored:boolean;success:()=>void}){const {control,handleSubmit,setError,formState:{errors,isSubmitting}}=useForm<Login>({resolver:zodResolver(loginSchema),defaultValues:{email:"",password:""}}),submit=handleSubmit(async values=>{try{const pair=await api.login(values.email,values.password);await Promise.all([SecureStore.setItemAsync("ga_access_token",pair.accessToken),SecureStore.setItemAsync("ga_refresh_token",pair.refreshToken)]);success()}catch(error){setError("root",{message:error instanceof Error?error.message:"Sign in failed"})}}),unlock=async()=>{const available=await LocalAuthentication.hasHardwareAsync()&&await LocalAuthentication.isEnrolledAsync();if(!available)return;const result=await LocalAuthentication.authenticateAsync({promptMessage:"Unlock Ops Companion",cancelLabel:"Use password"});if(result.success){try{await api.me();success()}catch(error){setError("root",{message:error instanceof Error?error.message:"Session expired"})}}};return <Safe><KeyboardAvoidingView behavior={Platform.OS==="ios"?"padding":undefined} style={{flex:1,justifyContent:"center"}}><Brand/><Text style={[t.display,{marginTop:s.xl}]}>Operations,{"\n"}within reach.</Text><Text style={[t.body,{color:c.muted,marginTop:s.sm,marginBottom:s.xl}]}>Monitor platform health and respond securely from your phone.</Text><View style={{gap:s.md}}><Field control={control} name="email" label="Work email" error={errors.email?.message} autoCapitalize="none" keyboardType="email-address"/><Field control={control} name="password" label="Password" error={errors.password?.message} secureTextEntry/>{errors.root?.message&&<Text style={{color:c.danger,fontWeight:"600"}}>{errors.root.message}</Text>}<Button label={isSubmitting?"Signing in...":"Sign in securely"} onPress={submit} disabled={isSubmitting}/>{stored&&<Button label="Unlock with biometrics" onPress={unlock} variant="secondary"/>}</View><Text style={[t.caption,{textAlign:"center",marginTop:s.xl}]}>Protected by SecureStore and your device security.</Text></KeyboardAvoidingView></Safe>}
+function Field({control,name,label,error,...props}:{control:ReturnType<typeof useForm<Login>>["control"];name:keyof Login;label:string;error?:string}&React.ComponentProps<typeof TextInput>){return <Controller control={control} name={name} render={({field:{value,onChange,onBlur}})=><View style={{gap:7}}><Text style={{color:c.text,fontSize:13,fontWeight:"700"}}>{label}</Text><TextInput {...props} value={value} onChangeText={onChange} onBlur={onBlur} placeholderTextColor={c.subtle} style={{minHeight:54,borderRadius:r.md,borderWidth:1,borderColor:error?c.danger:c.border,backgroundColor:c.card,color:c.text,paddingHorizontal:16,fontSize:16}}/>{error&&<Text style={{color:c.danger,fontSize:12}}>{error}</Text>}</View>}/>}
+function Ops({signOut}:{signOut:()=>void}){const {tab,setTab}=useOpsStore(),[detail,setDetail]=useState<{type:"incident"|"deployment";item:Entity}|null>(null);return <Safe padded={false}><View style={{flex:1}}>{tab==="overview"&&<Overview open={(type,item)=>setDetail({type,item})}/>} {tab==="incidents"&&<Incidents open={item=>setDetail({type:"incident",item})}/>} {tab==="deployments"&&<Deployments open={item=>setDetail({type:"deployment",item})}/>} {tab==="alerts"&&<Alerts signOut={signOut}/>}</View><Nav tab={tab} setTab={setTab}/><Detail value={detail} close={()=>setDetail(null)}/></Safe>}
+function Overview({open}:{open:(type:"incident"|"deployment",item:Entity)=>void}){const incidents=useQuery({queryKey:["incidents"],queryFn:()=>api.list("incidents")}),deployments=useQuery({queryKey:["deployments"],queryFn:()=>api.list("deployments")}),ledger=useQuery({queryKey:["ledger"],queryFn:()=>api.list("ledger")}),active=(incidents.data??[]).filter(x=>!['RESOLVED','CLOSED'].includes(String(x.status))),running=(deployments.data??[]).filter(x=>['PENDING','QUEUED','RUNNING'].includes(String(x.status))),revenue=(ledger.data??[]).reduce((sum,x)=>sum+Number(x.amount??0),0),refresh=()=>{incidents.refetch();deployments.refetch();ledger.refetch()};return <ScrollView contentContainerStyle={{padding:s.lg,gap:s.lg}} refreshControl={<RefreshControl refreshing={incidents.isRefetching} onRefresh={refresh} tintColor={c.brand}/>}><Head eyebrow="LIVE OPERATIONS" title="Good morning" subtitle="Here is what needs your attention."/><View style={{flexDirection:"row",flexWrap:"wrap",gap:s.sm}}><Metric label="API health" value={incidents.error?"Degraded":"Healthy"} detail="Core services" tone={incidents.error?"danger":"success"}/><Metric label="Active incidents" value={String(active.length)} detail="Needs response" tone={active.length?"warning":"success"}/><Metric label="Deployments" value={String(running.length)} detail="In progress"/><Metric label="Revenue" value={new Intl.NumberFormat("en",{notation:"compact",style:"currency",currency:"USD"}).format(revenue)} detail="Recorded ledger"/></View><Title>Priority queue</Title>{active.slice(0,3).map(item=><IncidentCard key={item.id} item={item} onPress={()=>open("incident",item)}/>)}{!active.length&&<Card><Text style={t.title}>Everything is calm</Text><Text style={[t.body,{color:c.muted,marginTop:5}]}>No incident requires action.</Text></Card>}<Title>Current deployments</Title>{running.slice(0,2).map(item=><DeploymentCard key={item.id} item={item} onPress={()=>open("deployment",item)}/>)}</ScrollView>}
+function Incidents({open}:{open:(item:Entity)=>void}){const q=useQuery({queryKey:["incidents"],queryFn:()=>api.list("incidents")});return <View style={{flex:1,padding:s.lg}}><Head eyebrow="RESPONSE CENTER" title="Incidents" subtitle="Acknowledge, assign and resolve."/>{q.isLoading?<Empty loading title="Loading incidents"/>:q.error?<Empty title="Could not load incidents" description={q.error.message}/>:<FlashList data={q.data??[]} contentContainerStyle={{paddingTop:s.lg,paddingBottom:s.xl}} ItemSeparatorComponent={()=><View style={{height:12}}/>} ListEmptyComponent={<Empty title="No incidents" description="No recorded incidents."/>} renderItem={({item}:{item:Entity})=><IncidentCard item={item} onPress={()=>open(item)}/>}/>}</View>}
+function Deployments({open}:{open:(item:Entity)=>void}){const q=useQuery({queryKey:["deployments"],queryFn:()=>api.list("deployments")});return <View style={{flex:1,padding:s.lg}}><Head eyebrow="RELEASE OPERATIONS" title="Deployments" subtitle="Track rollout state and failures."/>{q.isLoading?<Empty loading title="Loading deployments"/>:q.error?<Empty title="Could not load deployments" description={q.error.message}/>:<FlashList data={q.data??[]} contentContainerStyle={{paddingTop:s.lg,paddingBottom:s.xl}} ItemSeparatorComponent={()=><View style={{height:12}}/>} ListEmptyComponent={<Empty title="No deployments"/>} renderItem={({item}:{item:Entity})=><DeploymentCard item={item} onPress={()=>open(item)}/>}/>}</View>}
+function Alerts({signOut}:{signOut:()=>void}){const [permission,setPermission]=useState("unknown");useEffect(()=>{Notifications.getPermissionsAsync().then(x=>setPermission(x.status))},[]);const enable=async()=>{if(Platform.OS==="android")await Notifications.setNotificationChannelAsync("operations",{name:"Operations",importance:Notifications.AndroidImportance.HIGH,vibrationPattern:[0,250,150,250],lightColor:c.brand});setPermission((await Notifications.requestPermissionsAsync()).status)};const alerts=[["Deployment failed","Critical"],["High error rate","Critical"],["Quota exceeded","Warning"],["Webhook failure","Warning"],["Incident assigned","Action"],["Contract expiring","Notice"]];return <ScrollView contentContainerStyle={{padding:s.lg,gap:s.md}}><Head eyebrow="SMART ALERTING" title="Notifications" subtitle="High-signal alerts grouped by urgency."/><Card tone={permission==="granted"?undefined:"warning"}><Text style={t.title}>Push permission: {permission}</Text><Text style={[t.body,{color:c.muted,marginVertical:10}]}>Remote push on Android requires an Expo development build.</Text>{permission!=="granted"&&<Button label="Enable notifications" onPress={enable}/>}</Card>{alerts.map(([name,level],i)=><Card key={name} tone={i<2?"danger":undefined}><View style={{flexDirection:"row",alignItems:"center",gap:12}}><View style={{width:42,height:42,borderRadius:14,backgroundColor:i<2?"#35151b":"#2b2413",alignItems:"center",justifyContent:"center"}}><Text style={{color:i<2?c.danger:c.warning,fontWeight:"900",fontSize:18}}>!</Text></View><View><Text style={t.title}>{name}</Text><Text style={t.caption}>{level} channel ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· enabled</Text></View></View></Card>)}<Button label="Sign out" variant="danger" onPress={signOut}/></ScrollView>}
+function Detail({value,close}:{value:{type:"incident"|"deployment";item:Entity}|null;close:()=>void}){const qc=useQueryClient(),[message,setMessage]=useState(""),mutation=useMutation({mutationFn:async(action:string)=>{if(!value)throw new Error("No selection");const actorId=await api.userId();if(value.type==="deployment")return api.deploymentAction(value.item.id,{status:action,actorId,message:message||undefined});if(action==="assign")return api.incidentAction(value.item.id,action,{actorId,assigneeId:actorId});if(action==="timeline")return api.incidentAction(value.item.id,action,{actorId,type:"NOTE",message:message||"Mobile operator note"});return api.incidentAction(value.item.id,action,{actorId,message:message||undefined})},onSuccess:()=>{qc.invalidateQueries();close()}});if(!value)return null;const item=value.item;return <Modal visible animationType="slide" presentationStyle="pageSheet" onRequestClose={close}><Safe><ScrollView contentContainerStyle={{padding:s.lg,gap:s.md}}><View style={{flexDirection:"row",justifyContent:"space-between",alignItems:"center"}}><Pill value={value.type==="incident"?item.severity:item.status}/><Pressable onPress={close} hitSlop={15}><Text style={{color:c.brand,fontWeight:"800"}}>Close</Text></Pressable></View><Text style={t.display}>{value.type==="incident"?String(item.title):`Release ${String(item.releaseId).slice(0,8)}`}</Text><Text style={[t.body,{color:c.muted}]}>{String(item.description??"Live deployment workflow and operator controls.")}</Text><Card>{Object.entries(item).filter(([key])=>["status","incidentNumber","assigneeId","environmentId","createdAt","relatedDeploymentId"].includes(key)).map(([key,val])=><View key={key} style={{flexDirection:"row",justifyContent:"space-between",gap:12,paddingVertical:10,borderBottomWidth:1,borderBottomColor:c.border}}><Text style={{color:c.muted}}>{key}</Text><Text numberOfLines={1} style={{color:c.text,fontWeight:"700",maxWidth:"60%"}}>{String(val??"ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â")}</Text></View>)}</Card><TextInput value={message} onChangeText={setMessage} placeholder="Optional operator note" placeholderTextColor={c.subtle} multiline style={{minHeight:90,borderRadius:r.md,borderWidth:1,borderColor:c.border,backgroundColor:c.card,color:c.text,padding:14,textAlignVertical:"top"}}/>{value.type==="incident"?<><Button label="Acknowledge incident" disabled={mutation.isPending||item.status!=="OPEN"} onPress={()=>mutation.mutate("acknowledge")}/><Button label="Assign to me" variant="secondary" disabled={mutation.isPending} onPress={()=>mutation.mutate("assign")}/><Button label="Add timeline note" variant="secondary" disabled={mutation.isPending||!message.trim()} onPress={()=>mutation.mutate("timeline")}/><Button label="Resolve incident" variant="success" disabled={mutation.isPending||item.status==="RESOLVED"} onPress={()=>mutation.mutate("resolve")}/></>:<><Button label={item.status==="PENDING"?"Approve deployment":"Start deployment"} disabled={mutation.isPending||!['PENDING','QUEUED'].includes(String(item.status))} onPress={()=>mutation.mutate(item.status==="PENDING"?"QUEUED":"RUNNING")}/><Button label="Request rollback" variant="danger" disabled={mutation.isPending||item.status!=="SUCCEEDED"} onPress={()=>mutation.mutate("ROLLED_BACK")}/></>}{mutation.error&&<Text style={{color:c.danger}}>{mutation.error.message}</Text>}</ScrollView></Safe></Modal>}
+function Nav({tab,setTab}:{tab:OpsTab;setTab:(tab:OpsTab)=>void}){const items:[OpsTab,string,string][]=[["overview","O","Overview"],["incidents","!","Incidents"],["deployments","D","Deploy"],["alerts","A","Alerts"]];return <View style={{height:72,borderTopWidth:1,borderTopColor:c.border,backgroundColor:c.card,flexDirection:"row",paddingBottom:8}}>{items.map(([id,icon,label])=><Pressable key={id} onPress={()=>setTab(id)} style={{flex:1,alignItems:"center",justifyContent:"center",gap:4}}><Text style={{color:tab===id?c.brand:c.subtle,fontSize:17,fontWeight:"900"}}>{icon}</Text><Text style={{color:tab===id?c.brand:c.subtle,fontSize:10,fontWeight:"700"}}>{label}</Text></Pressable>)}</View>}
+function Head({eyebrow,title,subtitle}:{eyebrow:string;title:string;subtitle:string}){return <View><Text style={{color:c.brand,fontSize:11,fontWeight:"800",letterSpacing:1.5}}>{eyebrow}</Text><Text style={[t.heading,{marginTop:5}]}>{title}</Text><Text style={[t.body,{color:c.muted,marginTop:4}]}>{subtitle}</Text></View>}function Title({children}:{children:string}){return <Text style={t.heading}>{children}</Text>}function IncidentCard({item,onPress}:{item:Entity;onPress:()=>void}){return <Card onPress={onPress}><View style={{flexDirection:"row",justifyContent:"space-between",gap:12}}><View style={{flex:1}}><Text style={t.title}>{String(item.title)}</Text><Text numberOfLines={2} style={[t.body,{color:c.muted,marginTop:5}]}>{String(item.description)}</Text><Text style={[t.caption,{marginTop:8}]}>{String(item.incidentNumber)}</Text></View><View style={{gap:6}}><Pill value={item.severity}/><Pill value={item.status}/></View></View></Card>}function DeploymentCard({item,onPress}:{item:Entity;onPress:()=>void}){return <Card onPress={onPress}><View style={{flexDirection:"row",justifyContent:"space-between",gap:12}}><View><Text style={t.title}>Release {String(item.releaseId).slice(0,8)}</Text><Text style={[t.caption,{marginTop:6}]}>Environment {String(item.environmentId).slice(0,8)}</Text></View><Pill value={item.status}/></View></Card>}function Safe({children,padded=true}:{children:React.ReactNode;padded?:boolean}){return <SafeAreaView style={{flex:1,backgroundColor:c.bg}} edges={["top","left","right"]}><View style={{flex:1,paddingHorizontal:padded?s.lg:0}}>{children}</View></SafeAreaView>}

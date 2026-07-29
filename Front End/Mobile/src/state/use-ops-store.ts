@@ -1,0 +1,1 @@
+import {create} from "zustand";export type OpsTab="overview"|"incidents"|"deployments"|"alerts";interface OpsState{tab:OpsTab;setTab:(tab:OpsTab)=>void}export const useOpsStore=create<OpsState>(set=>({tab:"overview",setTab:tab=>set({tab})}));

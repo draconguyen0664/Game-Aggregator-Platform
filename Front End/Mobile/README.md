@@ -1,56 +1,46 @@
-# Welcome to your Expo app 👋
+# Game Aggregator Ops Companion
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+React Native operations companion for the Game Aggregator Platform. It focuses on high-signal mobile workflows instead of duplicating the three web portals.
 
-## Get started
+## Features
 
-1. Install dependencies
+- Secure Spring authentication with tokens stored in Expo SecureStore.
+- Optional Face ID, Touch ID, or fingerprint session unlock.
+- Responsive live dashboard backed by incident, deployment, and ledger services.
+- Incident acknowledgement, self-assignment, timeline notes, and resolution.
+- Deployment state controls and rollback requests.
+- Push notification permission flow and Android operations channel.
+- TanStack Query loading, error, pull-to-refresh, and empty states.
+- FlashList feeds, Zustand navigation, Reanimated transitions, and optional Sentry reporting.
 
-   ```bash
-   npm install
-   ```
+## Configure
 
-2. Start the app
+Copy `.env.example` to `.env`:
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```powershell
+Copy-Item .env.example .env
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Android Emulator uses `10.0.2.2` by default. iOS Simulator and web use `127.0.0.1`. For a physical device, set `EXPO_PUBLIC_BACKEND_HOST` to the development computer's LAN address and allow the backend ports through the local firewall.
 
-### Other setup steps
+## Run
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+Start the Docker backend first, then:
 
-## Learn more
+```powershell
+npm install
+npm run android
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+Use `npm run ios` on macOS or `npm run web` for the browser build. Remote push notifications on Android require an Expo development build; Expo Go supports local notifications but not remote push on current SDK versions.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Quality checks
 
-## Join the community
+```powershell
+npm run typecheck
+npm run lint
+npm test -- --runInBand
+npx expo config --type public
+```
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Never commit login credentials, Expo push tokens, refresh tokens, or Sentry auth tokens. `EXPO_PUBLIC_SENTRY_DSN` is optional.
